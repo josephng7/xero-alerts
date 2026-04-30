@@ -1,0 +1,7 @@
+- [ ] Initialize Next.js + TypeScript dependencies and configs
+- [ ] Add baseline app layout/page files and metadata
+- [ ] Add `GET /api/health` route
+- [ ] Add `lib/` placeholder modules for db/queue/crypto/xero
+- [ ] Add `.env.example` with required keys for planned integrations
+- [ ] Ensure CI commands run (`lint`, `typecheck`, `build`)
+- [ ] Update README with scaffold run instructions
