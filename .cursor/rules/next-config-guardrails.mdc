@@ -1,0 +1,11 @@
+---
+description: Next.js config and environment safety checks
+globs: next.config.*
+alwaysApply: false
+---
+
+# Next Config Safety
+
+- Keep config minimal and explicit.
+- Document non-default runtime or experimental flags in PR notes.
+- Validate any rewrites/redirects for security and path correctness.

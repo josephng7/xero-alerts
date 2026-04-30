@@ -1,0 +1,14 @@
+---
+description: Next.js and TypeScript coding guardrails
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js + TypeScript Guardrails
+
+- Prefer App Router conventions and server-first data access where practical.
+- Keep route handlers thin; move reusable logic into `lib/` modules.
+- Use explicit types on public function boundaries and exported objects.
+- Avoid `any`; if unavoidable, narrow quickly and document why.
+- Never leak secrets to client bundles; only expose `NEXT_PUBLIC_*` vars intentionally.
+- Add or update tests for behavioral changes in core flows.
