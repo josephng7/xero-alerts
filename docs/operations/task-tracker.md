@@ -44,4 +44,4 @@ This tracker is the execution board for the project plan. It is updated continuo
 | Test foundation | done | Replaced placeholder tests with runnable `vitest` unit suite. |
 | API contract scaffolding | done | Added planned API route stubs returning `501` until business logic lands. |
 | Ops runbooks | done | Added incident runbook starters for token and delivery failures. |
-| Security primitives | done | HMAC webhook verify, bank normalize, AES-GCM token helpers, tests, key rotation runbook (`add-security-primitives`). |
+| Security primitives | done | HMAC webhook verify, bank normalize, AES-GCM token helpers, tests, key rotation runbook (`add-security-primitives`). Land via `feat/security-primitives` if `main` is gated on CodeQL. |

@@ -49,6 +49,7 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Added OpenSpec change `add-security-primitives` and `docs/runbooks/key-rotation.md`.
 - Repaired logbook heading encoding (ASCII hyphen separators).
 - Verification: `pnpm run verify` passed locally (`lint`, `typecheck`, `test`, `build`).
+- Push to `origin/main` was blocked by repository rules (CodeQL must report before the commit can land on `main`). The same commits are on `feat/security-primitives` for a PR and merge once checks pass. Open a PR from: https://github.com/josephng7/xero-alerts/pull/new/feat/security-primitives
 
 ## Logging Rules
 
