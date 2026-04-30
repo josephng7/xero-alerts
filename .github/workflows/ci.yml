@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Package manager guard
+        run: pnpm run --if-present check:pm
+
       - name: Typecheck
         run: pnpm run --if-present typecheck
 

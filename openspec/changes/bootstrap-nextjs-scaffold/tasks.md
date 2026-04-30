@@ -1,7 +1,7 @@
-- [ ] Initialize Next.js + TypeScript dependencies and configs
-- [ ] Add baseline app layout/page files and metadata
-- [ ] Add `GET /api/health` route
-- [ ] Add `lib/` placeholder modules for db/queue/crypto/xero
-- [ ] Add `.env.example` with required keys for planned integrations
-- [ ] Ensure CI commands run (`lint`, `typecheck`, `build`)
-- [ ] Update README with scaffold run instructions
+- [x] Initialize Next.js + TypeScript dependencies and configs
+- [x] Add baseline app layout/page files and metadata
+- [x] Add `GET /api/health` route
+- [x] Add `lib/` placeholder modules for db/queue/crypto/xero
+- [x] Add `.env.example` with required keys for planned integrations
+- [x] Ensure CI commands run (`lint`, `typecheck`, `build`)
+- [x] Update README with scaffold run instructions
