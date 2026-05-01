@@ -1,0 +1,6 @@
+- [x] Implement Xero authorize URL/state helper in `lib/xero/oauth.ts`.
+- [x] Implement `/api/connect/xero` redirect flow with state cookie.
+- [x] Implement callback code exchange + tenant lookup in `/api/oauth/callback`.
+- [x] Persist encrypted tokens via DB helper (`lib/db/xero-oauth.ts`).
+- [x] Add unit test for authorize URL generation.
+- [x] Run `pnpm run verify` and record outcomes in operations docs.

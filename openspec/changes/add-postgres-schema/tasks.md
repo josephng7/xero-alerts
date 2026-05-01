@@ -1,0 +1,8 @@
+- [x] Confirm migration tool and Postgres host (Drizzle + Supabase; see `design.md`).
+- [x] Document Supabase `DATABASE_URL` in `.env.example` (no Docker Compose).
+- [x] Add DB dependencies and pnpm scripts (`db:generate`, `db:migrate`, `db:studio`).
+- [x] Implement `lib/db` for shared Drizzle access.
+- [x] Author and commit initial Drizzle migration under `drizzle/` (`0000_init.sql` + `meta/`; apply with `pnpm run db:migrate` when `DATABASE_URL` points at Supabase).
+- [x] Document apply workflow in `openspec/README.md` and `docs/process/workflow.md`.
+- [x] CI runs `db:migrate` when `DATABASE_URL` GitHub Actions secret is set.
+- [x] Run `pnpm run verify` and record in `docs/operations/logbook.md`.
