@@ -1,0 +1,5 @@
+- [x] Add `INTERNAL_API_SECRET` to environment parsing and sample env file.
+- [x] Add reusable internal route auth helper with `401`/`403`/`500` behavior.
+- [x] Protect sync snapshots, process-event, notify, and poll-org-accounts routes.
+- [x] Add tests for unauthorized and authorized behaviors across protected routes.
+- [x] Run `pnpm run verify` and resolve issues.

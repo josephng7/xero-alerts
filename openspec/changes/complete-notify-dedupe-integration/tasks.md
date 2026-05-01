@@ -1,0 +1,6 @@
+- [x] Add `notify_dispatches` persistence table and Drizzle schema.
+- [x] Implement shared notify job execution with dedupe claim and release behavior.
+- [x] Refactor `/api/jobs/notify` to use shared notify worker logic.
+- [x] Integrate notify worker execution into `/api/jobs/process-event`.
+- [x] Add tests for dedupe behavior and process-event notify integration.
+- [ ] Run `pnpm run verify` and resolve failures.
