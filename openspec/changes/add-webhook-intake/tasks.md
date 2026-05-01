@@ -1,0 +1,5 @@
+- [x] Implement webhook intake route with Xero HMAC verification.
+- [x] Add webhook event persistence helper with deterministic idempotency key.
+- [x] Add optional QStash queue handoff helper and integrate on successful insert.
+- [x] Add tests for idempotency key behavior.
+- [x] Run `pnpm run verify` and record outcomes in operations docs.

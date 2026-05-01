@@ -1,0 +1,5 @@
+- [x] Add DB lookup helper for queued webhook event and prior snapshot.
+- [x] Add account snapshot diff helper.
+- [x] Implement `/api/jobs/process-event` route processing flow.
+- [x] Add unit tests for diff behavior.
+- [x] Run `pnpm run verify` and record outcomes in operations docs.

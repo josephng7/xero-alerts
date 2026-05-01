@@ -1,0 +1,7 @@
+- [x] Implement `/api/cron/poll-org-accounts` route behavior.
+- [x] Add snapshot staleness helper for pre-poll state.
+- [x] Enforce env and tenant guard checks.
+- [x] Persist latest Xero account snapshot for tenant polls.
+- [x] Return staleness-oriented response summary.
+- [x] Add route tests for guard and success cases.
+- [x] Run `pnpm run verify` and resolve issues.
