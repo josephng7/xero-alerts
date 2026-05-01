@@ -1,0 +1,6 @@
+- [x] Add `account_snapshots` schema and migration with RLS policy.
+- [x] Implement Xero account fetch + mapper helper.
+- [x] Implement snapshot persistence upsert helper.
+- [x] Implement `/api/admin/sync-snapshots` route behavior.
+- [x] Add mapper unit test coverage.
+- [x] Run `pnpm run verify` and record outcomes in operations docs.
