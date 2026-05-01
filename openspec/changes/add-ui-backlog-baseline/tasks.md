@@ -1,0 +1,5 @@
+- [x] Add OpenSpec proposal/design/spec/task artifacts for UI baseline.
+- [x] Replace placeholder home page with minimal dashboard summary + webhook event list.
+- [x] Add placeholder alert detail page with acknowledgement affordance wired to `POST /api/alerts/[id]/ack`.
+- [x] Add focused tests for UI baseline helper logic.
+- [x] Run `pnpm run verify` (blocked by pre-existing repository type errors unrelated to this change) and resolve any introduced issues.
