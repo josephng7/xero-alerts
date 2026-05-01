@@ -1,0 +1,6 @@
+- [x] Add JSON content-type enforcement for webhook, process-event, and snapshot sync POST routes.
+- [x] Add webhook payload size guard using `content-length`.
+- [x] Add strict request body schema validation for process-event and snapshot sync routes.
+- [x] Sanitize internal error responses for oauth callback, process-event, snapshot sync, and health routes.
+- [x] Add tests covering new validation and error-sanitization behavior.
+- [x] Run `pnpm run verify` and resolve issues.

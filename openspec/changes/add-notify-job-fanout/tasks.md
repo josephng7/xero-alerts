@@ -1,0 +1,6 @@
+- [x] Implement `/api/jobs/notify` payload validation and no-op behavior.
+- [x] Add notification helpers for decision logic, formatting, and channel delivery.
+- [x] Add unit tests for notify no-op or formatting logic.
+- [ ] Wire process-event to call notify endpoint in a follow-up change.
+- [ ] Add persisted dedup/digest storage in a follow-up change.
+- [x] Run `pnpm run verify` and address issues.
