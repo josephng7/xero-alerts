@@ -1,8 +1,71 @@
-export default function HomePage() {
+import Link from "next/link";
+
+import { getUiDashboardBaseline } from "@/lib/ui/baseline";
+
+export const dynamic = "force-dynamic";
+
+function formatIso(iso: string | null) {
+  if (!iso) {
+    return "N/A";
+  }
+  return new Date(iso).toLocaleString();
+}
+
+export default async function HomePage() {
+  const baseline = await getUiDashboardBaseline();
+
   return (
-    <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <h1>Xero Alerts</h1>
-      <p>Scaffold is ready. Continue with feature todos via OpenSpec changes.</p>
+    <main style={{ fontFamily: "sans-serif", padding: "2rem", maxWidth: 920 }}>
+      <h1>Xero Alerts Dashboard</h1>
+      <p style={{ marginTop: "0.5rem" }}>Minimal UI baseline over existing APIs and persisted event data.</p>
+
+      <section style={{ marginTop: "1.5rem" }}>
+        <h2>Latest processing/snapshot summary</h2>
+        <ul>
+          <li>Latest webhook received: {formatIso(baseline.latestWebhookReceivedAt)}</li>
+          <li>Latest snapshot fetched: {formatIso(baseline.snapshot?.fetchedAt ?? null)}</li>
+          <li>Latest snapshot source: {baseline.snapshot?.source ?? "N/A"}</li>
+          <li>Latest snapshot account count: {baseline.snapshot?.accountCount ?? 0}</li>
+        </ul>
+      </section>
+
+      <section style={{ marginTop: "1.5rem" }}>
+        <h2>Webhook events</h2>
+        {baseline.webhookEvents.length === 0 ? (
+          <p>No webhook events yet.</p>
+        ) : (
+          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", paddingBottom: "0.4rem" }}>
+                  Event
+                </th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", paddingBottom: "0.4rem" }}>
+                  Category
+                </th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", paddingBottom: "0.4rem" }}>
+                  Status
+                </th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", paddingBottom: "0.4rem" }}>
+                  Received
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {baseline.webhookEvents.map((event) => (
+                <tr key={event.id}>
+                  <td style={{ paddingTop: "0.5rem" }}>
+                    <Link href={`/alerts/${event.id}`}>{event.id.slice(0, 8)}...</Link>
+                  </td>
+                  <td style={{ paddingTop: "0.5rem" }}>{event.eventCategory ?? "N/A"}</td>
+                  <td style={{ paddingTop: "0.5rem" }}>{event.status}</td>
+                  <td style={{ paddingTop: "0.5rem" }}>{formatIso(event.receivedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
     </main>
   );
 }
