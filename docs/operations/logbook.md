@@ -51,6 +51,11 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally (`lint`, `typecheck`, `test`, `build`).
 - Push to `origin/main` was blocked by repository rules (CodeQL must report before the commit can land on `main`). The same commits are on `feat/security-primitives` for a PR and merge once checks pass. Open a PR from: https://github.com/josephng7/xero-alerts/pull/new/feat/security-primitives
 
+### 11:45 - Agents enforcement (process)
+- Added `.cursor/rules/agents-enforcement.mdc` (always apply), `scripts/check-agents-compliance.cjs`, CI step `check:agents`, PR template process checkboxes, `.github/CODEOWNERS`, and expanded `pnpm run verify` to run PM + agents guards.
+- Clarified `AGENTS.md` as canonical; document guard script paths in How we work.
+- Verification: `pnpm run verify` passed locally.
+
 ## Logging Rules
 
 For each future work block, append:
