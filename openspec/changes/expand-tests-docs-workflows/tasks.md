@@ -1,0 +1,8 @@
+- [x] Add route tests for webhook queue/duplicate behavior.
+- [x] Add route tests for process-event guard and successful processing.
+- [x] Add route tests for notify no-op and actionable fanout.
+- [x] Add route test for admin sync tenant guard.
+- [x] Add workflow-contract test for webhook -> process-event -> notify payload compatibility.
+- [x] Update README with current endpoint behavior and env requirements.
+- [x] Add/update runbooks for webhook pipeline and failure triage.
+- [x] Run `pnpm run verify` and resolve any issues.

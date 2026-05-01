@@ -12,6 +12,13 @@
 - `fix/<scope>`
 - `chore/<scope>`
 
+## Database
+
+Postgres runs on **Supabase** in every environment (including local dev). Set `DATABASE_URL` in `.env` from the Supabase dashboard; do not use Docker for Postgres on this project.
+
+- After pulling migration changes: `pnpm run db:migrate`
+- After editing `lib/db/schema.ts`: `pnpm run db:generate` then commit files under `drizzle/`
+
 ## Required Review Areas
 Mandatory non-author review for:
 - Auth/session logic

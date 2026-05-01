@@ -14,6 +14,10 @@ export async function POST(request: Request) {
   if (!internalAuth.ok) {
     return internalAuth.response;
   }
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return NextResponse.json({ message: "Content-Type must be application/json" }, { status: 415 });
+  }
 
   if (!env.XERO_CLIENT_ID || !env.XERO_CLIENT_SECRET || !env.TOKEN_ENCRYPTION_KEY) {
     return NextResponse.json(
@@ -78,7 +82,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Org account poll failed";
-    return NextResponse.json({ message }, { status: 500 });
+    console.error("poll-org-accounts failed", error);
+    return NextResponse.json({ message: "Org account poll failed" }, { status: 500 });
   }
 }

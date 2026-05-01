@@ -2,18 +2,20 @@
 
 ## Signals
 - Teams or email notifications fail repeatedly.
-- `alert_deliveries` records show persistent channel errors.
+- `POST /api/jobs/notify` returns channel failures or repeated `5xx`.
+- Queue retries for downstream jobs increase unexpectedly.
 
 ## Immediate Actions
-1. Check upstream provider status pages (Teams webhook and Resend).
-2. Validate webhook/API credentials and sender configuration.
-3. Confirm queue retries are still active.
+1. Verify upstream status pages (Microsoft Teams webhooks and Resend).
+2. Confirm notification env vars are set: `TEAMS_WEBHOOK_URL`, `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL`.
+3. Replay one known-good payload against `/api/jobs/notify` in non-production and confirm channel behavior.
+4. If queue handoff is enabled, verify `QSTASH_URL` and `QSTASH_TOKEN` and check publish failures from webhook intake.
 
 ## Recovery
-1. Fix invalid credentials or destination configuration.
-2. Requeue failed notifications where possible.
-3. Verify successful delivery on both channels.
+1. Fix invalid credentials, sender domain, or destination webhook/email settings.
+2. Reprocess impacted events through `/api/jobs/process-event` then `/api/jobs/notify`.
+3. Verify one successful Teams and email send from the same payload.
 
 ## Post-Incident
-- Document the incident in the execution logbook.
-- Tune retry policy or fallback behavior if needed.
+- Add a regression test if the incident exposed a missing validation branch.
+- Record follow-up actions in your standard ops tracking workflow.

@@ -30,19 +30,39 @@ The app now includes a minimal Next.js + TypeScript baseline.
 - `pnpm run build`
 - `pnpm run verify`
 
-## Current API Stub Status
+## Current API Behavior
 
-The following routes exist as intentional `501 Not implemented yet` stubs to lock in endpoint shape while implementation is pending:
+Implemented worker and ops endpoints:
 
-- `/api/webhooks/xero`
-- `/api/jobs/process-event`
-- `/api/jobs/notify`
-- `/api/cron/poll-org-accounts`
-- `/api/admin/sync-snapshots`
-- `/api/connect/xero`
-- `/api/oauth/callback`
-- `/api/alerts`
-- `/api/alerts/:id/ack`
+- `/api/webhooks/xero`: verifies Xero signature, deduplicates webhook payloads, persists webhook events, and optionally enqueues `/api/jobs/process-event` via QStash.
+- `/api/jobs/process-event`: resolves a webhook event by id/idempotency key, enforces optional tenant allow-list, refreshes account snapshot, and returns account diff summary.
+- `/api/jobs/notify`: validates diff payloads, no-ops when no actionable changes, and fans out Teams + email notifications.
+- `/api/cron/poll-org-accounts`: polls one tenant, persists snapshot, and returns before/after staleness summary.
+- `/api/admin/sync-snapshots`: manually syncs one tenant snapshot with the same tenant guard.
+
+OAuth and status endpoints:
+
+- `/api/connect/xero`: initiates OAuth authorize redirect.
+- `/api/oauth/callback`: exchanges auth code and stores tenant token metadata.
+- `/api/health`: basic runtime health contract.
+
+## Required Environment Variables
+
+Minimum env set for webhook-to-notify flow:
+
+- `NEXTAUTH_URL`
+- `XERO_CLIENT_ID`
+- `XERO_CLIENT_SECRET`
+- `XERO_WEBHOOK_KEY`
+- `TOKEN_ENCRYPTION_KEY`
+- `DATABASE_URL`
+- `INTERNAL_API_SECRET` (required for internal worker/cron/admin routes)
+
+Optional but commonly required:
+
+- `XERO_ALLOWED_TENANT_ID` (single-tenant guard)
+- `QSTASH_URL`, `QSTASH_TOKEN` (queue handoff)
+- `TEAMS_WEBHOOK_URL`, `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL` (notifications)
 
 ## Worktree Convention
 
