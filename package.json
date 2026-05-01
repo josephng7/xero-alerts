@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "test:integration": "echo \"No integration tests yet\"",
     "check:pm": "node scripts/check-package-manager.cjs",
-    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
+    "check:agents": "node scripts/check-agents-compliance.cjs",
+    "verify": "pnpm run check:pm && pnpm run check:agents && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
   },
   "dependencies": {
     "next": "^16.0.0",

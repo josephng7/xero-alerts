@@ -34,6 +34,9 @@ jobs:
       - name: Package manager guard
         run: pnpm run --if-present check:pm
 
+      - name: Agents compliance guard
+        run: pnpm run --if-present check:agents
+
       - name: Typecheck
         run: pnpm run --if-present typecheck
 

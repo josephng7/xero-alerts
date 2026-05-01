@@ -1,0 +1,13 @@
+---
+description: Enforce AGENTS.md workflow, role discipline, and delivery tracking
+alwaysApply: true
+---
+
+# Agent process
+
+- Treat root `AGENTS.md` as authoritative for this repository.
+- For substantive changes, use OpenSpec under `openspec/changes/<change-id>/` (proposal, design, tasks, spec deltas).
+- Prefer **pnpm** only for installs and verification (`pnpm install`, `pnpm run verify`, `pnpm run check:pm`).
+- After each meaningful batch of work, update `docs/operations/task-tracker.md` and append to `docs/operations/logbook.md` with verification notes.
+- When work is parallelizable (docs vs tests vs security review vs exploration), use **multiple subagents** and merge results in one coherent PR.
+- Map changes to the role model in `AGENTS.md` / `docs/agents/roles.md` (Architect, Backend, Frontend, Security/DevOps, QA, Reviewer). Security-sensitive paths need explicit Security/DevOps + Reviewer attention.

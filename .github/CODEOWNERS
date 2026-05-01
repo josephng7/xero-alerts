@@ -1,0 +1,9 @@
+# Default owners for review requests. Adjust @handles or use @org/team as needed.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @josephng7
+
+# High-risk surfaces (require explicit owner awareness)
+/lib/crypto.ts @josephng7
+/lib/signature.ts @josephng7
+/app/api/ @josephng7

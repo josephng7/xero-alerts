@@ -54,3 +54,9 @@ Use a parent folder layout and create feature worktrees from `main`:
 
 - Task tracker: `docs/operations/task-tracker.md`
 - Execution logbook: `docs/operations/logbook.md`
+
+## Runbooks
+
+- Key rotation: `docs/runbooks/key-rotation.md`
+- Token failures: `docs/runbooks/token-failure.md`
+- Delivery failures: `docs/runbooks/delivery-failure.md`

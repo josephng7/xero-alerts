@@ -1,0 +1,5 @@
+- [x] Implement `verifyXeroWebhookSignature` and HMAC helper.
+- [x] Implement `normalizeBankDetails`.
+- [x] Implement AES-256-GCM `encryptToken` / `decryptToken`.
+- [x] Add Vitest coverage for signature, normalization, and crypto round-trip.
+- [x] Add `docs/runbooks/key-rotation.md`.
