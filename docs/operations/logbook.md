@@ -55,6 +55,7 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Added `.cursor/rules/agents-enforcement.mdc` (always apply), `scripts/check-agents-compliance.cjs`, CI step `check:agents`, PR template process checkboxes, `.github/CODEOWNERS`, and expanded `pnpm run verify` to run PM + agents guards.
 - Clarified `AGENTS.md` as canonical; document guard script paths in How we work.
 - Verification: `pnpm run verify` passed locally.
+- Commit: `5093c6a`. Push to `main` blocked by CodeQL ruleset; use branch `feat/agents-enforcement` and open https://github.com/josephng7/xero-alerts/pull/new/feat/agents-enforcement
 
 ## Logging Rules
 
