@@ -31,6 +31,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check migration artifacts are up to date
+        run: |
+          pnpm run db:generate
+          git diff --exit-code -- drizzle
+
+      - name: Apply database migrations (Supabase)
+        if: ${{ secrets.DATABASE_URL != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm run db:migrate
+
       - name: Package manager guard
         run: pnpm run --if-present check:pm
 

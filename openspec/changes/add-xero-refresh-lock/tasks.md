@@ -1,0 +1,4 @@
+- [x] Add `refreshAccessToken` helper in `lib/xero/oauth.ts`.
+- [x] Implement tenant token retrieval + refresh orchestration with optimistic lock in `lib/xero/refresh.ts`.
+- [x] Add unit coverage for refresh exchange helper.
+- [x] Run `pnpm run verify` and record outcomes in operations docs.
