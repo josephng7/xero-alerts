@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { validateInternalRouteAuth } from "@/lib/auth/internal-route-auth";
+import { validateCronInternalRouteAuth } from "@/lib/auth/internal-route-auth";
 import { getSnapshotStaleness, saveAccountSnapshot } from "@/lib/db/account-snapshots";
 import { getEnv } from "@/lib/env";
 import { fetchBankAccountSnapshot } from "@/lib/xero/accounts";
@@ -10,7 +10,7 @@ const SNAPSHOT_SOURCE = "xero_poll";
 
 export async function POST(request: Request) {
   const env = getEnv();
-  const internalAuth = validateInternalRouteAuth(request, env.INTERNAL_API_SECRET);
+  const internalAuth = validateCronInternalRouteAuth(request, env);
   if (!internalAuth.ok) {
     return internalAuth.response;
   }

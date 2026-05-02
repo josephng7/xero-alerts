@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { validateInternalRouteAuth } from "@/lib/auth/internal-route-auth";
+import { validateAdminInternalRouteAuth } from "@/lib/auth/internal-route-auth";
 import { saveAccountSnapshot } from "@/lib/db/account-snapshots";
 import { getEnv } from "@/lib/env";
 import { fetchBankAccountSnapshot } from "@/lib/xero/accounts";
@@ -15,7 +15,7 @@ const syncSnapshotsBodySchema = z
 
 export async function POST(request: Request) {
   const env = getEnv();
-  const internalAuth = validateInternalRouteAuth(request, env.INTERNAL_API_SECRET);
+  const internalAuth = validateAdminInternalRouteAuth(request, env);
   if (!internalAuth.ok) {
     return internalAuth.response;
   }

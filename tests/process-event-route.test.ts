@@ -7,6 +7,7 @@ const hoisted = vi.hoisted(() => ({
   getTenantAccessTokenMock: vi.fn(),
   fetchBankAccountSnapshotMock: vi.fn(),
   saveAccountSnapshotMock: vi.fn(),
+  createAlertFromProcessEventDiffMock: vi.fn(),
   runNotifyJobMock: vi.fn()
 }));
 
@@ -29,6 +30,10 @@ vi.mock("@/lib/xero/accounts", () => ({
 
 vi.mock("@/lib/db/account-snapshots", () => ({
   saveAccountSnapshot: hoisted.saveAccountSnapshotMock
+}));
+
+vi.mock("@/lib/db/alerts", () => ({
+  createAlertFromProcessEventDiff: hoisted.createAlertFromProcessEventDiffMock
 }));
 
 vi.mock("@/lib/jobs/notify", () => ({
@@ -61,7 +66,7 @@ describe("POST /api/jobs/process-event", () => {
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "enc-key",
-      INTERNAL_API_SECRET: internalSecret
+      INTERNAL_ADMIN_SECRET: internalSecret
     });
   });
 
@@ -107,7 +112,7 @@ describe("POST /api/jobs/process-event", () => {
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "enc-key",
       XERO_ALLOWED_TENANT_ID: "tenant-allowed",
-      INTERNAL_API_SECRET: internalSecret
+      INTERNAL_ADMIN_SECRET: internalSecret
     });
     hoisted.getWebhookEventForProcessingMock.mockResolvedValue({
       id: "evt-1",
@@ -167,6 +172,10 @@ describe("POST /api/jobs/process-event", () => {
       accountCount: 1,
       fetchedAt: "2026-05-02T00:10:00.000Z"
     });
+    hoisted.createAlertFromProcessEventDiffMock.mockResolvedValue({
+      created: true,
+      alertId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+    });
     hoisted.runNotifyJobMock.mockResolvedValue({
       message: "Notify job completed",
       status: "sent",
@@ -216,6 +225,11 @@ describe("POST /api/jobs/process-event", () => {
       }
     });
     expect(json.notify.status).toBe("sent");
+    expect(json.alert).toEqual({
+      created: true,
+      alertId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+    });
+    expect(hoisted.createAlertFromProcessEventDiffMock).toHaveBeenCalledTimes(1);
     expect(hoisted.saveAccountSnapshotMock).toHaveBeenCalledWith({
       tenantId: "tenant-1",
       source: "webhook_process_event",

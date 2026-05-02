@@ -42,7 +42,7 @@ describe("POST /api/jobs/notify", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     hoisted.getEnvMock.mockReturnValue({
-      INTERNAL_API_SECRET: internalSecret
+      INTERNAL_ADMIN_SECRET: internalSecret
     });
   });
 

@@ -77,3 +77,22 @@ export const notifyDispatches = pgTable(
   },
   (t) => [uniqueIndex("notify_dispatches_dedupe_uidx").on(t.dedupeKey)]
 );
+
+export const alerts = pgTable(
+  "alerts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    xeroTenantId: text("xero_tenant_id").notNull(),
+    source: text("source").notNull().default("process_event_diff"),
+    webhookEventId: uuid("webhook_event_id").references(() => webhookEvents.id, { onDelete: "set null" }),
+    idempotencyKey: text("idempotency_key"),
+    title: text("title").notNull(),
+    diff: jsonb("diff").notNull(),
+    acknowledgedAt: timestamp("acknowledged_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
+  },
+  (t) => [uniqueIndex("alerts_webhook_event_uidx").on(t.webhookEventId)]
+);

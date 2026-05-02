@@ -1,0 +1,11 @@
+---
+description: Never commit on main; use feature branch and PR merge
+alwaysApply: true
+---
+
+# Git: branch and pull request
+
+- **Do not** create commits directly on `main`. Default branch is protected (CodeQL / repo rules); merges land via **pull request**.
+- **Workflow:** create or checkout a feature branch (`git checkout -b feat/<topic>` or `fix/<topic>`), commit there, **`git push -u origin <branch>`**, open a PR into `main`, merge after checks pass.
+- **If** the workspace is already on `main` with uncommitted work: branch **before** committing (`git checkout -b feat/...` then commit).
+- **Exception:** Only when the user explicitly asks to commit on `main` for a documented one-off (avoid unless unavoidable).

@@ -37,10 +37,14 @@ jobs:
           git diff --exit-code -- drizzle
 
       - name: Apply database migrations (Supabase)
-        if: ${{ secrets.DATABASE_URL != '' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: pnpm run db:migrate
+        run: |
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "DATABASE_URL not set; skipping migrations."
+            exit 0
+          fi
+          pnpm run db:migrate
 
       - name: Package manager guard
         run: pnpm run --if-present check:pm

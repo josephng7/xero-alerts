@@ -1,0 +1,6 @@
+- [x] Extend `lib/auth/internal-route-auth.ts` with bundle validation, cron/admin helpers, optional previous secrets.
+- [x] Add env vars in `lib/env.ts` and `.env.example`; remove `INTERNAL_API_SECRET`.
+- [x] Wire cron vs admin validators on protected API routes.
+- [x] Add runbook `docs/runbooks/internal-api-secret-rotation.md`.
+- [x] Update route tests and add `tests/internal-route-auth.test.ts`.
+- [x] Add OpenSpec delta under `specs/route-security/spec.md`.
