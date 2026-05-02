@@ -203,6 +203,14 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - **Merged to `main`:** PR #11 closed and merged (merge commit `62bc5f953d76f4b2d821ac318839484aaba031aa`). Delivers Wave 3 features, split internal secrets, go-live/rotation runbooks, Drizzle `0004_snapshot`, CI workflow guard fix, and CodeQL-safe URL parsing in `tests/workflow-webhook-queue-xero-fetch.test.ts`. Follow-up for operators: apply migration `0004_alerts` where needed; configure `INTERNAL_CRON_SECRET` / `INTERNAL_ADMIN_SECRET`.
 - **Architecture docs:** OpenSpec `add-docs-architecture-baseline` — `docs/architecture/` (README, `data-and-platform-workflow.md`, `trust-and-secrets.md`); root `README` and `docs/process/workflow.md` link layers (OpenSpec vs architecture vs runbooks). Verification: `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 
+## 2026-05-03
+
+### CodeQL js/request-forgery (alert #4)
+- **Issue:** GitHub Code scanning flagged server-side request forgery in `app/alerts/[id]/ack-action.ts` — `fetch` URL path included user-supplied `alertId` without validation ([alert](https://github.com/josephng7/xero-alerts/security/code-scanning/4)).
+- **Change:** Added `lib/server/alert-id.ts` with `parseAlertId()` (`z.string().uuid()`), used in `submitAlertAck` and `getUiAlertById` before building internal API URLs; added `tests/alert-id.test.ts`.
+- **Verification:** `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
+- **Follow-up:** Merge via PR to `main`; after CodeQL re-runs, dismiss or confirm alert closed; unblock dependent PRs.
+
 ## Logging Rules
 
 For each future work block, append:
