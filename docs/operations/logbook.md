@@ -187,6 +187,7 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test` 65/65, `build`).
 - Follow-up: commit when ready; broader RBAC, chaos/E2E, and audit UI remain backlog.
 - Operator confirmation: all three parallel tracks (alerts MVP, split internal secrets + rotation, go-live/tests) marked complete for this wave.
+- Committed locally as `2409467` (`feat: alerts MVP, split internal secrets, go-live and tests`). Push to `origin/main` blocked by repo rules until CodeQL completes; changes pushed to branch `feat/wave-3-alerts-security-docs` for PR: https://github.com/josephng7/xero-alerts/pull/new/feat/wave-3-alerts-security-docs
 
 ## Logging Rules
 
