@@ -32,7 +32,7 @@ describe("POST /api/admin/sync-snapshots", () => {
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "key",
-      INTERNAL_API_SECRET: internalSecret,
+      INTERNAL_ADMIN_SECRET: internalSecret,
       XERO_ALLOWED_TENANT_ID: "tenant-allowed"
     });
   });
@@ -60,6 +60,32 @@ describe("POST /api/admin/sync-snapshots", () => {
         headers: {
           "content-type": "application/json",
           "x-internal-api-secret": "bad-secret"
+        },
+        body: JSON.stringify({ tenantId: "tenant-allowed" })
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ message: "Forbidden internal request" });
+    expect(hoisted.getTenantAccessTokenMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when cron secret is used on admin route", async () => {
+    hoisted.getEnvMock.mockReturnValue({
+      XERO_CLIENT_ID: "cid",
+      XERO_CLIENT_SECRET: "secret",
+      TOKEN_ENCRYPTION_KEY: "key",
+      INTERNAL_CRON_SECRET: "cron-only",
+      INTERNAL_ADMIN_SECRET: internalSecret,
+      XERO_ALLOWED_TENANT_ID: "tenant-allowed"
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/admin/sync-snapshots", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-api-secret": "cron-only"
         },
         body: JSON.stringify({ tenantId: "tenant-allowed" })
       })

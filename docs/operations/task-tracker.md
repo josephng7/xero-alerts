@@ -22,13 +22,13 @@ This tracker is the execution board for the project plan. It is updated continuo
 | process-event | Build worker processing and diff logic | done | Implemented `/api/jobs/process-event` with webhook-event lookup, token refresh integration, account diff computation, and snapshot upsert (`add-process-event-diff`). |
 | poll-org | Build org account polling endpoint and staleness tracking | done | Implemented `/api/cron/poll-org-accounts` with tenant guard, pre/post staleness summary, token refresh integration, account fetch, and snapshot upsert (`add-poll-org-accounts-staleness`). |
 | notify | Build Teams/Email notification job with dedup/digest | done | Completed fanout + durable dedupe integration: `notify_dispatches` persistence (`0003_notify_dispatches.sql`), shared notify worker, and process-event notify handoff (`complete-notify-dedupe-integration`). |
-| ui | Build dashboard, detail, ack and audit UI | in_progress | UI baseline shipped (`add-ui-backlog-baseline`): dashboard summary + webhook list + alert detail/ack scaffolding; full alerts workflow and audit surfaces still pending. |
-| security | Complete signature checks, RBAC, masking, key-rotation hardening | in_progress | Route validation + internal auth hardening landed (`harden-route-validation-pass`, `harden-internal-route-auth`): JSON/content-length checks, sanitized error responses, and shared-secret guard on admin/job/cron routes; RBAC/rotation hardening still pending. |
+| ui | Build dashboard, detail, ack and audit UI | in_progress | **Wave 3 complete:** alerts list/detail/ack MVP (`add-alerts-mvp`) verified. Audit and richer operator views still pending. |
+| security | Complete signature checks, RBAC, masking, key-rotation hardening | in_progress | **Wave 3 complete:** split cron/admin secrets + optional previous keys + rotation runbook (`split-internal-api-secrets`). Broader RBAC (roles beyond caller class) still pending. |
 | domain-email | Configure alert domain + SPF/DKIM/DMARC + Resend domain | pending | External infra task. |
 | backups | Weekly backup + quarterly restore process | pending | Requires managed Postgres decision. |
 | chaos-tests | Failure injection scenarios and resilience tests | pending | After core pipeline completion. |
-| tests | Unit/integration/E2E test suite completion | in_progress | Expanded route + workflow contract coverage for webhook/process-event/poll-org/notify/admin guards (`expand-tests-docs-workflows`) with current suite green. |
-| docs | Final setup/runbook docs for operations and rotation | in_progress | Updated README + token/delivery runbooks and added webhook pipeline runbook (`expand-tests-docs-workflows`); final operator pass still pending. |
+| tests | Unit/integration/E2E test suite completion | in_progress | **Wave 3 complete:** workflow integration test + internal-auth tests; suite green. Deeper E2E/chaos still pending. |
+| docs | Final setup/runbook docs for operations and rotation | in_progress | **Wave 3 complete:** `docs/runbooks/go-live.md`, README pointer, internal secret rotation runbook. Final polish/E2E operator doc pass still optional. |
 
 ## Active Session Queue (Autonomous)
 

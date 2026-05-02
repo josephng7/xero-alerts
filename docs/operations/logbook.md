@@ -179,6 +179,15 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - Follow-up: implement RBAC role model and secret-rotation workflow for internal auth, complete alert UI end-to-end state/actions, and add deeper integration/chaos tests.
 
+### 07:30-08:00 - Parallel wave 3 (alerts MVP, split internal secrets, go-live/tests)
+- Ran three concurrent subagent tracks and reconciled in one working tree (no merge conflicts).
+- Track 1 — Alerts (`add-alerts-mvp`): `drizzle/0004_alerts.sql`, `lib/db/alerts.ts`, admin-auth `GET /api/alerts`, `GET /api/alerts/[id]`, `POST /api/alerts/[id]/ack`, process-event creates alert rows on actionable bank diff, UI wired via `lib/ui/alerts-data.ts` + server actions.
+- Track 2 — Internal auth split (`split-internal-api-secrets`): `INTERNAL_CRON_SECRET` / `INTERNAL_ADMIN_SECRET` (+ optional `*_PREVIOUS`), routes updated to cron vs admin validators; runbook `docs/runbooks/internal-api-secret-rotation.md`.
+- Track 3 — Ops/tests (`go-live-runbook-workflow-test`): `docs/runbooks/go-live.md`, workflow integration test `tests/workflow-webhook-queue-xero-fetch.test.ts`, internal-auth unit tests, README link to go-live.
+- Verification: `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test` 65/65, `build`).
+- Follow-up: commit when ready; broader RBAC, chaos/E2E, and audit UI remain backlog.
+- Operator confirmation: all three parallel tracks (alerts MVP, split internal secrets + rotation, go-live/tests) marked complete for this wave.
+
 ## Logging Rules
 
 For each future work block, append:

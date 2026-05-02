@@ -1,0 +1,11 @@
+---
+description: Terminal cwd is project root; avoid leading cd in shell commands
+alwaysApply: true
+---
+
+# Shell working directory
+
+- **Assume** the agent/integrated terminal session **already has cwd = the repository root** (this workspace: `c:\GitHub\xero-alerts\main` or the opened folder root).
+- When running shell commands **do not** prefix with `cd <path>;` before `git`, `pnpm`, `node`, etc. Run them directly (e.g. `pnpm run verify`, `git status`).
+- **Only** use `cd` when the task truly requires another directory (monorepo subpackage, one-off path). Prefer `working_directory` / run from root with explicit paths if the tool supports it.
+- **Rationale:** Chained `cd ...; ...` often triggers extra command-approval steps; staying in root matches typical Cursor behavior and keeps allowlist matching on simple commands like `git commit`.

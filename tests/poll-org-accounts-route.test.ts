@@ -63,7 +63,7 @@ describe("POST /api/cron/poll-org-accounts", () => {
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "key",
-      INTERNAL_API_SECRET: internalSecret
+      INTERNAL_CRON_SECRET: internalSecret
     });
 
     const response = await POST(buildRequest({ tenantId: "tenant-allowed" }));
@@ -79,7 +79,7 @@ describe("POST /api/cron/poll-org-accounts", () => {
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "key",
-      INTERNAL_API_SECRET: internalSecret
+      INTERNAL_CRON_SECRET: internalSecret
     });
 
     const response = await POST(buildRequest({ tenantId: "tenant-allowed" }, "bad-secret"));
@@ -89,13 +89,28 @@ describe("POST /api/cron/poll-org-accounts", () => {
     expect(json.message).toBe("Forbidden internal request");
   });
 
+  it("returns 403 when admin secret is used on cron route", async () => {
+    getEnvMock.mockReturnValue({
+      NODE_ENV: "test",
+      XERO_CLIENT_ID: "cid",
+      XERO_CLIENT_SECRET: "secret",
+      TOKEN_ENCRYPTION_KEY: "key",
+      INTERNAL_CRON_SECRET: "cron-only",
+      INTERNAL_ADMIN_SECRET: "admin-only"
+    });
+
+    const response = await POST(buildRequest({ tenantId: "tenant-1" }, "admin-only"));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ message: "Forbidden internal request" });
+  });
+
   it("returns 403 when tenant is not allowed", async () => {
     getEnvMock.mockReturnValue({
       NODE_ENV: "test",
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "key",
-      INTERNAL_API_SECRET: internalSecret,
+      INTERNAL_CRON_SECRET: internalSecret,
       XERO_ALLOWED_TENANT_ID: "tenant-allowed"
     });
 
@@ -120,7 +135,7 @@ describe("POST /api/cron/poll-org-accounts", () => {
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "key",
-      INTERNAL_API_SECRET: internalSecret,
+      INTERNAL_CRON_SECRET: internalSecret,
       XERO_ALLOWED_TENANT_ID: "tenant-1"
     });
     getSnapshotStalenessMock.mockResolvedValue(stalenessBefore);

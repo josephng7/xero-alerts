@@ -56,7 +56,12 @@ Minimum env set for webhook-to-notify flow:
 - `XERO_WEBHOOK_KEY`
 - `TOKEN_ENCRYPTION_KEY`
 - `DATABASE_URL`
-- `INTERNAL_API_SECRET` (required for internal worker/cron/admin routes)
+- `INTERNAL_CRON_SECRET` (cron routes such as `/api/cron/poll-org-accounts`)
+- `INTERNAL_ADMIN_SECRET` (admin and job routes: `/api/admin/sync-snapshots`, `/api/jobs/process-event`, `/api/jobs/notify`)
+
+For a full production cutover checklist (migrations, OAuth, Xero webhook URL, safety checks), see `docs/runbooks/go-live.md`.
+
+Optional dual-key overlap during rotation: `INTERNAL_CRON_SECRET_PREVIOUS`, `INTERNAL_ADMIN_SECRET_PREVIOUS`. See `docs/runbooks/internal-api-secret-rotation.md`.
 
 Optional but commonly required:
 
@@ -77,6 +82,8 @@ Use a parent folder layout and create feature worktrees from `main`:
 
 ## Runbooks
 
+- Go-live (env, migrations, OAuth, webhook URL): `docs/runbooks/go-live.md`
 - Key rotation: `docs/runbooks/key-rotation.md`
+- Internal API secret rotation: `docs/runbooks/internal-api-secret-rotation.md`
 - Token failures: `docs/runbooks/token-failure.md`
 - Delivery failures: `docs/runbooks/delivery-failure.md`

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { diffBankAccountSnapshots } from "@/lib/alerts/diff-accounts";
-import { validateInternalRouteAuth } from "@/lib/auth/internal-route-auth";
+import { validateAdminInternalRouteAuth } from "@/lib/auth/internal-route-auth";
 import { saveAccountSnapshot } from "@/lib/db/account-snapshots";
+import { createAlertFromProcessEventDiff } from "@/lib/db/alerts";
 import { getWebhookEventForProcessing, getLatestAccountSnapshotByTenant } from "@/lib/db/process-event";
 import { getEnv } from "@/lib/env";
 import { runNotifyJob } from "@/lib/jobs/notify";
@@ -30,7 +31,7 @@ const processEventBodySchema = z
 
 export async function POST(request: Request) {
   const env = getEnv();
-  const internalAuth = validateInternalRouteAuth(request, env.INTERNAL_API_SECRET);
+  const internalAuth = validateAdminInternalRouteAuth(request, env);
   if (!internalAuth.ok) {
     return internalAuth.response;
   }
@@ -93,6 +94,13 @@ export async function POST(request: Request) {
       source: "webhook_process_event",
       accounts: currentAccounts
     });
+    const alert = await createAlertFromProcessEventDiff({
+      tenantId,
+      webhookEventId: event.id,
+      idempotencyKey: event.idempotencyKey,
+      diff
+    });
+
     const notify = await runNotifyJob(
       {
         tenantId,
@@ -110,6 +118,7 @@ export async function POST(request: Request) {
         tokenSource: token.source,
         snapshot: persisted,
         diff,
+        alert,
         notify
       },
       { status: 200 }

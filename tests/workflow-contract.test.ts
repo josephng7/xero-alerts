@@ -10,7 +10,8 @@ const hoisted = vi.hoisted(() => ({
   getTenantAccessTokenMock: vi.fn(),
   fetchBankAccountSnapshotMock: vi.fn(),
   saveAccountSnapshotMock: vi.fn(),
-  runNotifyJobMock: vi.fn()
+  runNotifyJobMock: vi.fn(),
+  createAlertFromProcessEventDiffMock: vi.fn()
 }));
 
 vi.mock("@/lib/env", () => ({
@@ -50,6 +51,10 @@ vi.mock("@/lib/jobs/notify", () => ({
   runNotifyJob: hoisted.runNotifyJobMock
 }));
 
+vi.mock("@/lib/db/alerts", () => ({
+  createAlertFromProcessEventDiff: hoisted.createAlertFromProcessEventDiffMock
+}));
+
 import { POST as processEventPost } from "@/app/api/jobs/process-event/route";
 import { POST as webhookPost } from "@/app/api/webhooks/xero/route";
 
@@ -61,7 +66,7 @@ describe("workflow contract: webhook -> process-event -> notify", () => {
       QSTASH_URL: "https://qstash.upstash.io",
       QSTASH_TOKEN: "qstash-token",
       NEXTAUTH_URL: "https://app.example.com",
-      INTERNAL_API_SECRET: "internal-secret",
+      INTERNAL_ADMIN_SECRET: "internal-secret",
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",
       TOKEN_ENCRYPTION_KEY: "enc-key",
@@ -107,6 +112,7 @@ describe("workflow contract: webhook -> process-event -> notify", () => {
       status: "sent",
       message: "Notify job completed"
     });
+    hoisted.createAlertFromProcessEventDiffMock.mockResolvedValue({ created: false, alertId: null });
 
     const webhookResponse = await webhookPost(
       new Request("http://localhost/api/webhooks/xero", {
@@ -144,7 +150,7 @@ describe("workflow contract: webhook -> process-event -> notify", () => {
         diff: processJson.diff
       },
       expect.objectContaining({
-        INTERNAL_API_SECRET: "internal-secret"
+        INTERNAL_ADMIN_SECRET: "internal-secret"
       })
     );
   });

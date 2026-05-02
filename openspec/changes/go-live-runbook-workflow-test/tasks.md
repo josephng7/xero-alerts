@@ -1,0 +1,4 @@
+- [x] Add `tests/workflow-webhook-queue-xero-fetch.test.ts` covering webhook POST, real QStash publish via mocked fetch, process-event with real Xero account fetch mapping.
+- [x] Add `docs/runbooks/go-live.md` with env tables, order of operations, safety checks, and related links.
+- [x] Update `README.md` to reference the go-live runbook.
+- [x] Run `pnpm run verify`.
