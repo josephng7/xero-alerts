@@ -4,6 +4,11 @@ This is a chronological operator log. Each entry records what changed, why, and 
 
 ## 2026-05-03
 
+### Optional env blanks no longer fail `parseEnv`
+- **Cause:** Zod `.optional()` only skips missing keys; `VAR=` or empty dashboard fields become `""`, which still fails `.url()`, `.email()`, and `.min(1)`.
+- **Change:** `normalizeEnvInput()` trims and maps empty strings to `undefined` before validation; exported for tests/callers if needed. Added `tests/env.test.ts` coverage.
+- Verification: `pnpm run verify` passed.
+
 ### `.env.example` policy correction
 - Restored uncommented `KEY=` rows for every variable in `lib/env.ts` that operators may set (including `NEXTAUTH_SECRET`, rotation/KV/QStash signing/Sentry). Only **omit** vars that are injected or implied by the runtime (`NODE_ENV`, `VERCEL_URL`), with a short header note. Deducible defaults remain documented in comments (`getAppBaseUrl`, default QStash API URL).
 

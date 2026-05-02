@@ -29,8 +29,21 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/** Treat unset-like values as missing so `.optional()` fields accept blank env entries (e.g. `VAR=` or empty Vercel UI fields). */
+export function normalizeEnvInput(
+  input: Record<string, string | undefined>
+): Record<string, string | undefined> {
+  return Object.fromEntries(
+    Object.entries(input).map(([key, value]) => {
+      if (value === undefined) return [key, undefined];
+      const trimmed = value.trim();
+      return [key, trimmed === "" ? undefined : trimmed];
+    })
+  );
+}
+
 export function parseEnv(input: Record<string, string | undefined>): Env {
-  const parsed = envSchema.safeParse(input);
+  const parsed = envSchema.safeParse(normalizeEnvInput(input));
 
   if (!parsed.success) {
     const message = parsed.error.issues

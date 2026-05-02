@@ -28,7 +28,7 @@ This tracker is the execution board for the project plan. It is updated continuo
 | backups | Weekly backup + quarterly restore process | pending | Requires managed Postgres decision. |
 | chaos-tests | Failure injection scenarios and resilience tests | pending | After core pipeline completion. |
 | tests | Unit/integration/E2E test suite completion | in_progress | **Wave 3 complete:** workflow integration test + internal-auth tests; suite green. Deeper E2E/chaos still pending. |
-| docs | Final setup/runbook docs for operations and rotation | in_progress | **Wave 3 complete:** `docs/runbooks/go-live.md`, README pointer, internal secret rotation runbook. Added **`docs/architecture/`** baseline (platform/trust diagrams; OpenSpec `add-docs-architecture-baseline`). **2026-05-03:** `.env.example` + runbooks aligned with derived public URL and default QStash API URL. Final polish/E2E operator doc pass still optional. |
+| docs | Final setup/runbook docs for operations and rotation | in_progress | **Wave 3 complete:** `docs/runbooks/go-live.md`, README pointer, internal secret rotation runbook. Added **`docs/architecture/`** baseline (platform/trust diagrams; OpenSpec `add-docs-architecture-baseline`). **2026-05-03:** `.env.example` + runbooks aligned with derived public URL and default QStash API URL. **`lib/env`:** blank optional env values (empty/whitespace) normalize to unset so empty Vercel/host fields do not fail startup. Final polish/E2E operator doc pass still optional. |
 
 ## Active Session Queue (Autonomous)
 
