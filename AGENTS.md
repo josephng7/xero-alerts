@@ -4,6 +4,7 @@ This file is the **source of truth** for how humans and AI agents work in this r
 
 ## How we work
 
+- **Git:** Do not commit directly on `main`. Work on a **feature branch**, push it, and merge via **pull request** (required for CodeQL / branch protection). Agents should `git checkout -b feat/...` before committing unless the user explicitly directs otherwise.
 - Use **OpenSpec** for substantive changes: `openspec/changes/<change-id>/` (proposal, design, tasks, spec deltas).
 - Prefer **pnpm** only (`pnpm install`, `pnpm run verify`). Guards: `scripts/check-package-manager.cjs`, `scripts/check-agents-compliance.cjs`.
 - Track execution in `docs/operations/task-tracker.md` and record outcomes in `docs/operations/logbook.md`.
