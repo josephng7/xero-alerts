@@ -189,6 +189,7 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Operator confirmation: all three parallel tracks (alerts MVP, split internal secrets + rotation, go-live/tests) marked complete for this wave.
 - Committed locally as `2409467` (`feat: alerts MVP, split internal secrets, go-live and tests`). Push to `origin/main` blocked by repo rules until CodeQL completes; changes pushed to branch `feat/wave-3-alerts-security-docs` for PR: https://github.com/josephng7/xero-alerts/pull/new/feat/wave-3-alerts-security-docs
 - Policy: `AGENTS.md` + `.cursor/rules/git-branch-pr.mdc` — no direct commits on `main`; use feature branch + PR. Opened **PR #11** (consolidated wave 3 + policy): https://github.com/josephng7/xero-alerts/pull/11
+- **Merged to `main`:** PR #11 closed and merged (merge commit `62bc5f953d76f4b2d821ac318839484aaba031aa`). Delivers Wave 3 features, split internal secrets, go-live/rotation runbooks, Drizzle `0004_snapshot`, CI workflow guard fix, and CodeQL-safe URL parsing in `tests/workflow-webhook-queue-xero-fetch.test.ts`. Follow-up for operators: apply migration `0004_alerts` where needed; configure `INTERNAL_CRON_SECRET` / `INTERNAL_ADMIN_SECRET`.
 
 ## Logging Rules
 
