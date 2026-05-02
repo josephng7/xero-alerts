@@ -80,6 +80,10 @@ Use a parent folder layout and create feature worktrees from `main`:
 - Task tracker: `docs/operations/task-tracker.md`
 - Execution logbook: `docs/operations/logbook.md`
 
+## Architecture
+
+- Platform / data-flow diagrams and trust boundaries: `docs/architecture/README.md`
+
 ## Runbooks
 
 - Go-live (env, migrations, OAuth, webhook URL): `docs/runbooks/go-live.md`

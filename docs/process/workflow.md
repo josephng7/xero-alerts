@@ -7,6 +7,12 @@
 4. Open PR with linked OpenSpec change and verification notes.
 5. Merge only after required review checks pass.
 
+## Documentation layers
+
+- **OpenSpec** (`openspec/`) — what we commit to build for a change; capability specs under `openspec/specs/` when synced.
+- **`docs/architecture/`** — stable diagrams and trust boundaries; update when topology or auth boundaries change.
+- **`docs/runbooks/`** — operator procedures (go-live, rotation, triage).
+
 ## Branch Naming
 - `feat/<change-id>`
 - `fix/<scope>`
