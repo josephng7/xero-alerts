@@ -58,6 +58,29 @@ function getRequestUrl(input: RequestInfo | URL): string {
   return input.url;
 }
 
+function parseUrlSafe(urlString: string): URL | null {
+  try {
+    return new URL(urlString);
+  } catch {
+    return null;
+  }
+}
+
+/** Host must match exactly; avoid substring checks (CodeQL js/incomplete-url-substring-sanitization). */
+function isXeroAccountsApiUrl(urlString: string): boolean {
+  const u = parseUrlSafe(urlString);
+  return u?.hostname === "api.xero.com";
+}
+
+/** Restrict QStash mock to expected host + publish API path. */
+function isQstashPublishUrl(urlString: string): boolean {
+  const u = parseUrlSafe(urlString);
+  if (!u) {
+    return false;
+  }
+  return u.hostname === "qstash.upstash.io" && u.pathname.includes("/v2/publish/");
+}
+
 describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)", () => {
   const internalSecret = "internal-workflow-secret";
 
@@ -118,7 +141,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = getRequestUrl(input);
 
-        if (url.includes("api.xero.com")) {
+        if (isXeroAccountsApiUrl(url)) {
           const headers = new Headers(init?.headers ?? undefined);
           expect(headers.get("Authorization")).toBe("Bearer xero-access-token");
           expect(headers.get("Accept")).toBe("application/json");
@@ -141,7 +164,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
           );
         }
 
-        if (url.includes("/v2/publish/")) {
+        if (isQstashPublishUrl(url)) {
           const headers = new Headers(init?.headers ?? undefined);
           expect(headers.get("Authorization")).toBe("Bearer qstash-token");
           expect(init?.method).toBe("POST");
@@ -187,7 +210,9 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
 
     const fetchMock = vi.mocked(globalThis.fetch);
     expect(fetchMock).toHaveBeenCalled();
-    const qstashCalls = fetchMock.mock.calls.filter((c) => getRequestUrl(c[0] as RequestInfo).includes("/v2/publish/"));
+    const qstashCalls = fetchMock.mock.calls.filter((c) =>
+      isQstashPublishUrl(getRequestUrl(c[0] as RequestInfo))
+    );
     expect(qstashCalls.length).toBeGreaterThan(0);
 
     const processResponse = await processEventPost(
@@ -214,7 +239,9 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
       alertId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
     });
 
-    const xeroCalls = fetchMock.mock.calls.filter((c) => getRequestUrl(c[0] as RequestInfo).includes("api.xero.com"));
+    const xeroCalls = fetchMock.mock.calls.filter((c) =>
+      isXeroAccountsApiUrl(getRequestUrl(c[0] as RequestInfo))
+    );
     expect(xeroCalls.length).toBeGreaterThan(0);
 
     expect(hoisted.saveAccountSnapshotMock).toHaveBeenCalledWith({
