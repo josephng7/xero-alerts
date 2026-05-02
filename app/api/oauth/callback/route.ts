@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 import { saveXeroOauthTokens } from "@/lib/db/xero-oauth";
 import { getEnv } from "@/lib/env";
+import { getAppBaseUrl } from "@/lib/server/app-base-url";
 import { exchangeCodeForToken, fetchPrimaryConnection } from "@/lib/xero/oauth";
 
 const STATE_PATTERN = /^[A-Za-z0-9_-]{20,128}$/;
@@ -26,11 +27,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "Invalid OAuth state" }, { status: 400 });
   }
 
-  if (!env.XERO_CLIENT_ID || !env.XERO_CLIENT_SECRET || !env.NEXTAUTH_URL) {
+  if (!env.XERO_CLIENT_ID || !env.XERO_CLIENT_SECRET) {
     return NextResponse.json(
       {
-        message:
-          "Missing required environment variables: XERO_CLIENT_ID, XERO_CLIENT_SECRET, NEXTAUTH_URL"
+        message: "Missing required environment variables: XERO_CLIENT_ID, XERO_CLIENT_SECRET"
       },
       { status: 500 }
     );
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const redirectUri = new URL("/api/oauth/callback", env.NEXTAUTH_URL).toString();
+    const redirectUri = new URL("/api/oauth/callback", getAppBaseUrl()).toString();
     const token = await exchangeCodeForToken({
       clientId: env.XERO_CLIENT_ID,
       clientSecret: env.XERO_CLIENT_SECRET,

@@ -50,7 +50,6 @@ OAuth and status endpoints:
 
 Minimum env set for webhook-to-notify flow:
 
-- `NEXTAUTH_URL`
 - `XERO_CLIENT_ID`
 - `XERO_CLIENT_SECRET`
 - `XERO_WEBHOOK_KEY`
@@ -59,6 +58,8 @@ Minimum env set for webhook-to-notify flow:
 - `INTERNAL_CRON_SECRET` (cron routes such as `/api/cron/poll-org-accounts`)
 - `INTERNAL_ADMIN_SECRET` (admin and job routes: `/api/admin/sync-snapshots`, `/api/jobs/process-event`, `/api/jobs/notify`)
 
+Public origin for OAuth redirects and QStash job URLs is inferred from optional `NEXTAUTH_URL`, then `VERCEL_URL` on Vercel, then `http://localhost:3000` (`lib/server/app-base-url.ts`). Set `NEXTAUTH_URL` when your public URL must differ from `VERCEL_URL` (for example a custom domain).
+
 For a full production cutover checklist (migrations, OAuth, Xero webhook URL, safety checks), see `docs/runbooks/go-live.md`.
 
 Optional dual-key overlap during rotation: `INTERNAL_CRON_SECRET_PREVIOUS`, `INTERNAL_ADMIN_SECRET_PREVIOUS`. See `docs/runbooks/internal-api-secret-rotation.md`.
@@ -66,7 +67,7 @@ Optional dual-key overlap during rotation: `INTERNAL_CRON_SECRET_PREVIOUS`, `INT
 Optional but commonly required:
 
 - `XERO_ALLOWED_TENANT_ID` (single-tenant guard)
-- `QSTASH_URL`, `QSTASH_TOKEN` (queue handoff)
+- `QSTASH_TOKEN` (queue handoff; QStash API URL defaults to `https://qstash.upstash.io` unless you set `QSTASH_URL`)
 - `TEAMS_WEBHOOK_URL`, `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL` (notifications)
 
 ## Worktree Convention

@@ -15,7 +15,7 @@
 
 ## Queue behavior
 
-- Queue handoff is optional and controlled by `QSTASH_URL`, `QSTASH_TOKEN`, `NEXTAUTH_URL`.
+- Queue handoff is optional and controlled by `QSTASH_TOKEN` (API URL defaults when `QSTASH_URL` is unset); callback base follows `getAppBaseUrl()` (`NEXTAUTH_URL`, then `VERCEL_URL`, then localhost).
 - Failures in queue publish do not lose intake data; webhook row is already persisted.
 
 ## Security

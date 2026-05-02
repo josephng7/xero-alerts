@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { recordWebhookEvent } from "@/lib/db/webhook-events";
 import { getEnv } from "@/lib/env";
-import { enqueueProcessEventJob } from "@/lib/queue/qstash";
+import { DEFAULT_QSTASH_URL, enqueueProcessEventJob } from "@/lib/queue/qstash";
+import { getAppBaseUrl } from "@/lib/server/app-base-url";
 import { verifyXeroWebhookSignature } from "@/lib/signature";
 
 const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -52,12 +53,13 @@ export async function POST(request: Request) {
     );
   }
 
-  if (env.QSTASH_URL && env.QSTASH_TOKEN && env.NEXTAUTH_URL) {
+  if (env.QSTASH_TOKEN) {
+    const qstashUrl = env.QSTASH_URL ?? DEFAULT_QSTASH_URL;
     try {
       const enqueue = await enqueueProcessEventJob({
-        qstashUrl: env.QSTASH_URL,
+        qstashUrl,
         qstashToken: env.QSTASH_TOKEN,
-        callbackBaseUrl: env.NEXTAUTH_URL,
+        callbackBaseUrl: getAppBaseUrl(),
         payload: {
           webhookEventId: recorded.webhookEventId,
           idempotencyKey: recorded.idempotencyKey
