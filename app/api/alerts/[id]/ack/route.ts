@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { validateAdminInternalRouteAuth } from "@/lib/auth/internal-route-auth";
 import { acknowledgeAlert, getAlertById } from "@/lib/db/alerts";
 import { getEnv } from "@/lib/env";
+import { parseAlertId } from "@/lib/server/alert-id";
 
 export const dynamic = "force-dynamic";
-
-const idSchema = z.string().uuid();
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const env = getEnv();
@@ -17,11 +15,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const { id: rawId } = await context.params;
-  const parsed = idSchema.safeParse(rawId);
-  if (!parsed.success) {
+  const id = parseAlertId(rawId);
+  if (!id) {
     return NextResponse.json({ message: "Invalid alert id" }, { status: 400 });
   }
-  const id = parsed.data;
 
   try {
     const existing = await getAlertById(id);
