@@ -6,8 +6,9 @@
 - Notification fanout: `POST /api/jobs/notify`
 
 ## Required Env
-- Core: `NEXTAUTH_URL`, `XERO_WEBHOOK_KEY`, `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `DATABASE_URL`, `INTERNAL_CRON_SECRET`, `INTERNAL_ADMIN_SECRET`
-- Queue (optional): `QSTASH_URL`, `QSTASH_TOKEN`
+- Core: `XERO_WEBHOOK_KEY`, `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `DATABASE_URL`, `INTERNAL_CRON_SECRET`, `INTERNAL_ADMIN_SECRET`
+- Optional public URL override: `NEXTAUTH_URL` when origin differs from `VERCEL_URL`
+- Queue (optional): `QSTASH_TOKEN` (defaults QStash API URL); optional `QSTASH_URL`
 - Notify (optional): `TEAMS_WEBHOOK_URL`, `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL`
 
 ## Quick Triage

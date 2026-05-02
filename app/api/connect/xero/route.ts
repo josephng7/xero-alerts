@@ -2,21 +2,20 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 import { getEnv } from "@/lib/env";
+import { getAppBaseUrl } from "@/lib/server/app-base-url";
 import { buildXeroAuthorizeUrl, createOauthState } from "@/lib/xero/oauth";
 
 export async function GET() {
   const env = getEnv();
-  if (!env.XERO_CLIENT_ID || !env.NEXTAUTH_URL) {
+  if (!env.XERO_CLIENT_ID) {
     return NextResponse.json(
-      {
-        message: "Missing required environment variables: XERO_CLIENT_ID and NEXTAUTH_URL"
-      },
+      { message: "Missing required environment variable: XERO_CLIENT_ID" },
       { status: 500 }
     );
   }
 
   const state = createOauthState();
-  const redirectUri = new URL("/api/oauth/callback", env.NEXTAUTH_URL).toString();
+  const redirectUri = new URL("/api/oauth/callback", getAppBaseUrl()).toString();
   const authorizeUrl = buildXeroAuthorizeUrl({
     clientId: env.XERO_CLIENT_ID,
     redirectUri,

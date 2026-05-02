@@ -32,5 +32,5 @@ The system MUST attempt queue publish after successful insert when queue env var
 
 #### Scenario: Queue configured
 
-- **WHEN** `QSTASH_URL`, `QSTASH_TOKEN`, and `NEXTAUTH_URL` are set
+- **WHEN** `QSTASH_TOKEN` is set (and public origin is inferable via `NEXTAUTH_URL`, `VERCEL_URL`, or localhost)
 - **THEN** intake attempts publish to the process-event endpoint and returns `202`.

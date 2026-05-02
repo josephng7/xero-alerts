@@ -86,11 +86,11 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
 
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.VERCEL_URL;
+    delete process.env.NEXTAUTH_URL;
     hoisted.getEnvMock.mockReturnValue({
       XERO_WEBHOOK_KEY: "webhook-secret",
-      QSTASH_URL: "https://qstash.upstash.io",
       QSTASH_TOKEN: "qstash-token",
-      NEXTAUTH_URL: "https://app.example.com",
       INTERNAL_ADMIN_SECRET: internalSecret,
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",

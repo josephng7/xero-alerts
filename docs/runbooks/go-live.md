@@ -28,9 +28,11 @@ Optional:
 
 ### App URLs and session
 
+Public origin for OAuth redirect URIs and QStash job targets is derived in this order: optional `NEXTAUTH_URL` (highest priority), else `VERCEL_URL` on Vercel, else `http://localhost:3000` for local dev. Set `NEXTAUTH_URL` to your canonical HTTPS origin when it differs from `VERCEL_URL` (for example a custom domain).
+
 | Variable | Purpose |
 | -------- | ------- |
-| `NEXTAUTH_URL` | Public base URL of this deployment (used for OAuth redirects and QStash callback base URL). Use `https://` in production. |
+| `NEXTAUTH_URL` | Optional override for the public base URL when it must differ from `VERCEL_URL`. |
 | `NEXTAUTH_SECRET` | Session secret for NextAuth when using auth features that require it. |
 
 ### Token storage
@@ -56,10 +58,10 @@ For webhook-to-worker handoff without blocking the HTTP request:
 
 | Variable | Purpose |
 | -------- | ------- |
-| `QSTASH_URL` | Upstash QStash API base (for example `https://qstash.upstash.io`). |
-| `QSTASH_TOKEN` | Bearer token for publishing. |
+| `QSTASH_TOKEN` | Bearer token for publishing (required to enable queue handoff). |
+| `QSTASH_URL` | Optional. Defaults to `https://qstash.upstash.io` when unset. |
 
-Verify callbacks: configure QStash signing keys in the deployment if you verify Upstash signatures (`QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY` in `.env.example` when applicable).
+Verify callbacks: configure QStash signing keys in the deployment if you verify Upstash signatures (`QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`).
 
 ### Notifications
 
@@ -75,14 +77,14 @@ Verify callbacks: configure QStash signing keys in the deployment if you verify 
 1. **Database**: Create or select a Postgres instance. Set `DATABASE_URL`.
 2. **Migrations**: From a trusted machine with env loaded, run `pnpm run db:migrate` so schema matches `drizzle/` migrations.
 3. **Secrets**: Set `TOKEN_ENCRYPTION_KEY`, `INTERNAL_ADMIN_SECRET`, `INTERNAL_CRON_SECRET`, `XERO_CLIENT_*`, `XERO_WEBHOOK_KEY`, and notification/queue vars as needed.
-4. **Deploy**: Deploy the application with `NEXTAUTH_URL` set to the final public HTTPS origin (no trailing slash issues on your host).
+4. **Deploy**: Deploy the application. Set `NEXTAUTH_URL` to the final public HTTPS origin only when it differs from `VERCEL_URL` (for example a custom domain).
 5. **OAuth connect**: Complete Xero OAuth once per environment so tenant tokens exist (`/api/connect/xero` then callback). Confirm the organization appears in the database if you inspect rows.
 6. **Webhook URL**: In the Xero developer portal, set the app webhook URL to:
 
    `https://<your-host>/api/webhooks/xero`
 
    Use the same `XERO_WEBHOOK_KEY` value as configured in the developer app for signature verification.
-7. **QStash**: If using queue mode, ensure `QSTASH_URL`, `QSTASH_TOKEN`, and `NEXTAUTH_URL` are set so publish targets `https://<NEXTAUTH_URL>/api/jobs/process-event`. Confirm QStash delivers with `x-internal-api-secret` matching `INTERNAL_ADMIN_SECRET` as configured for your worker invocation path.
+7. **QStash**: If using queue mode, set `QSTASH_TOKEN` (and optionally `QSTASH_URL`). Publishing targets `<public-origin>/api/jobs/process-event`, where public origin follows the same rules as OAuth (`NEXTAUTH_URL`, then `VERCEL_URL`, then localhost). Confirm QStash delivers with `x-internal-api-secret` matching `INTERNAL_ADMIN_SECRET` as configured for your worker invocation path.
 8. **Notifications**: Configure Teams and/or Resend and send a controlled test after the first successful process-event (see safety checks).
 
 ## Safety checks before full traffic

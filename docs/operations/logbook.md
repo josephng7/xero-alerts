@@ -2,6 +2,17 @@
 
 This is a chronological operator log. Each entry records what changed, why, and verification status.
 
+## 2026-05-03
+
+### `.env.example` policy correction
+- Restored uncommented `KEY=` rows for every variable in `lib/env.ts` that operators may set (including `NEXTAUTH_SECRET`, rotation/KV/QStash signing/Sentry). Only **omit** vars that are injected or implied by the runtime (`NODE_ENV`, `VERCEL_URL`), with a short header note. Deducible defaults remain documented in comments (`getAppBaseUrl`, default QStash API URL).
+
+### Env example trim + derived public URL / QStash defaults
+- Slimmed `.env.example` by documenting optional `NEXTAUTH_URL`/`NEXTAUTH_SECRET` only as comments; removed entries that are unused in code (KV, Sentry) or optional rotation/extra QStash keys from the template.
+- OAuth and QStash handoff now use `getAppBaseUrl()` (order: `NEXTAUTH_URL` → `VERCEL_URL` → `http://localhost:3000`) and default QStash API origin to `https://qstash.upstash.io` when `QSTASH_URL` is unset.
+- Updated README, `docs/runbooks/go-live.md`, and `docs/runbooks/webhook-pipeline.md`; extended webhook route tests.
+- Verification: `pnpm run verify` passed.
+
 ## 2026-05-01
 
 ### 05:30-05:52 - Process setup baseline

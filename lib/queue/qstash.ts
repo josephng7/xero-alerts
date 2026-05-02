@@ -1,3 +1,6 @@
+/** Upstash QStash API origin when `QSTASH_URL` is not set. */
+export const DEFAULT_QSTASH_URL = "https://qstash.upstash.io";
+
 export async function enqueueProcessEventJob(params: {
   qstashUrl: string;
   qstashToken: string;

@@ -27,6 +27,7 @@ vi.mock("@/lib/db/webhook-events", () => ({
 }));
 
 vi.mock("@/lib/queue/qstash", () => ({
+  DEFAULT_QSTASH_URL: "https://qstash.upstash.io",
   enqueueProcessEventJob: hoisted.enqueueProcessEventJobMock
 }));
 
@@ -61,11 +62,11 @@ import { POST as webhookPost } from "@/app/api/webhooks/xero/route";
 describe("workflow contract: webhook -> process-event -> notify", () => {
   it("keeps payload contracts compatible across route boundaries", async () => {
     vi.clearAllMocks();
+    delete process.env.VERCEL_URL;
+    delete process.env.NEXTAUTH_URL;
     hoisted.getEnvMock.mockReturnValue({
       XERO_WEBHOOK_KEY: "webhook-secret",
-      QSTASH_URL: "https://qstash.upstash.io",
       QSTASH_TOKEN: "qstash-token",
-      NEXTAUTH_URL: "https://app.example.com",
       INTERNAL_ADMIN_SECRET: "internal-secret",
       XERO_CLIENT_ID: "cid",
       XERO_CLIENT_SECRET: "secret",

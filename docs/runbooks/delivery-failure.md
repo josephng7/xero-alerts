@@ -9,7 +9,7 @@
 1. Verify upstream status pages (Microsoft Teams webhooks and Resend).
 2. Confirm notification env vars are set: `TEAMS_WEBHOOK_URL`, `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL`.
 3. Replay one known-good payload against `/api/jobs/notify` in non-production and confirm channel behavior.
-4. If queue handoff is enabled, verify `QSTASH_URL` and `QSTASH_TOKEN` and check publish failures from webhook intake.
+4. If queue handoff is enabled, verify `QSTASH_TOKEN` (and optional `QSTASH_URL`) and check publish failures from webhook intake.
 
 ## Recovery
 1. Fix invalid credentials, sender domain, or destination webhook/email settings.
