@@ -1,4 +1,5 @@
 import type { AlertRow } from "@/lib/db/alerts";
+import { parseAlertId } from "@/lib/server/alert-id";
 import { getAppBaseUrl } from "@/lib/server/app-base-url";
 
 type ListResponse = {
@@ -58,7 +59,12 @@ export async function getUiAlertById(id: string): Promise<{
     return { alert: null, unavailable: true };
   }
 
-  const url = new URL(`/api/alerts/${id}`, getAppBaseUrl());
+  const alertId = parseAlertId(id);
+  if (!alertId) {
+    return { alert: null, unavailable: false };
+  }
+
+  const url = new URL(`/api/alerts/${alertId}`, getAppBaseUrl());
   try {
     const res = await fetch(url, {
       headers: { "x-internal-api-secret": secret },
