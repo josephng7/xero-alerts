@@ -1,5 +1,6 @@
 "use server";
 
+import { parseAlertId } from "@/lib/server/alert-id";
 import { getAppBaseUrl } from "@/lib/server/app-base-url";
 
 export type AckFormResult = { ok: true; message: string } | { ok: false; message: string };
@@ -10,7 +11,12 @@ export async function submitAlertAck(alertId: string): Promise<AckFormResult> {
     return { ok: false, message: "Acknowledgement is not configured (missing INTERNAL_ADMIN_SECRET)" };
   }
 
-  const url = new URL(`/api/alerts/${alertId}/ack`, getAppBaseUrl());
+  const id = parseAlertId(alertId);
+  if (!id) {
+    return { ok: false, message: "Invalid alert id" };
+  }
+
+  const url = new URL(`/api/alerts/${id}/ack`, getAppBaseUrl());
   try {
     const res = await fetch(url, {
       method: "POST",
