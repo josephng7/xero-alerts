@@ -80,7 +80,8 @@ describe("POST /api/webhooks/xero", () => {
   it("returns 202 with queue metadata when queue handoff succeeds", async () => {
     hoisted.getEnvMock.mockReturnValue({
       XERO_WEBHOOK_KEY: "webhook-secret",
-      QSTASH_TOKEN: "qstash-token"
+      QSTASH_TOKEN: "qstash-token",
+      INTERNAL_ADMIN_SECRET: "admin-secret"
     });
     hoisted.enqueueProcessEventJobMock.mockResolvedValue({ messageId: "msg-1" });
 
@@ -107,6 +108,7 @@ describe("POST /api/webhooks/xero", () => {
       qstashUrl: "https://qstash.upstash.io",
       qstashToken: "qstash-token",
       callbackBaseUrl: "http://localhost:3000",
+      internalApiSecret: "admin-secret",
       payload: {
         webhookEventId: "evt-1",
         idempotencyKey: "idem-1"
@@ -120,7 +122,8 @@ describe("POST /api/webhooks/xero", () => {
     hoisted.getEnvMock.mockReturnValue({
       XERO_WEBHOOK_KEY: "webhook-secret",
       QSTASH_URL: "https://custom.qstash.example",
-      QSTASH_TOKEN: "qstash-token"
+      QSTASH_TOKEN: "qstash-token",
+      INTERNAL_ADMIN_SECRET: "admin-secret"
     });
     hoisted.enqueueProcessEventJobMock.mockResolvedValue({ messageId: "msg-2" });
 
@@ -140,11 +143,37 @@ describe("POST /api/webhooks/xero", () => {
       qstashUrl: "https://custom.qstash.example",
       qstashToken: "qstash-token",
       callbackBaseUrl: "https://app.example.com",
+      internalApiSecret: "admin-secret",
       payload: {
         webhookEventId: "evt-1",
         idempotencyKey: "idem-1"
       }
     });
+  });
+
+  it("returns 500 when QSTASH_TOKEN is set without INTERNAL_ADMIN_SECRET", async () => {
+    hoisted.getEnvMock.mockReturnValue({
+      XERO_WEBHOOK_KEY: "webhook-secret",
+      QSTASH_TOKEN: "qstash-token"
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/webhooks/xero", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-xero-signature": "sig"
+        },
+        body: JSON.stringify({ events: [{ eventId: "evt-1", tenantId: "tenant-1" }] })
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      message:
+        "Queue handoff requires INTERNAL_ADMIN_SECRET so QStash can forward x-internal-api-secret to the worker"
+    });
+    expect(hoisted.enqueueProcessEventJobMock).not.toHaveBeenCalled();
   });
 
   it("returns 200 for duplicate webhook event", async () => {

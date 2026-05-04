@@ -167,6 +167,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
         if (isQstashPublishUrl(url)) {
           const headers = new Headers(init?.headers ?? undefined);
           expect(headers.get("Authorization")).toBe("Bearer qstash-token");
+          expect(headers.get("Upstash-Forward-x-internal-api-secret")).toBe(internalSecret);
           expect(init?.method).toBe("POST");
           const body = typeof init?.body === "string" ? JSON.parse(init.body) : {};
           expect(body).toEqual({

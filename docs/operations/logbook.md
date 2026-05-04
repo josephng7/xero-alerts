@@ -2,48 +2,45 @@
 
 This is a chronological operator log. Each entry records what changed, why, and verification status.
 
-## 2026-05-03
-
-### `.env.example` policy correction
-- Restored uncommented `KEY=` rows for every variable in `lib/env.ts` that operators may set (including `NEXTAUTH_SECRET`, rotation/KV/QStash signing/Sentry). Only **omit** vars that are injected or implied by the runtime (`NODE_ENV`, `VERCEL_URL`), with a short header note. Deducible defaults remain documented in comments (`getAppBaseUrl`, default QStash API URL).
-
-### Env example trim + derived public URL / QStash defaults
-- Slimmed `.env.example` by documenting optional `NEXTAUTH_URL`/`NEXTAUTH_SECRET` only as comments; removed entries that are unused in code (KV, Sentry) or optional rotation/extra QStash keys from the template.
-- OAuth and QStash handoff now use `getAppBaseUrl()` (order: `NEXTAUTH_URL` → `VERCEL_URL` → `http://localhost:3000`) and default QStash API origin to `https://qstash.upstash.io` when `QSTASH_URL` is unset.
-- Updated README, `docs/runbooks/go-live.md`, and `docs/runbooks/webhook-pipeline.md`; extended webhook route tests.
-- Verification: `pnpm run verify` passed.
+Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore between date and time, **`+08:00`** offset). The file is ordered **oldest first**: earlier calendar dates appear above later dates; within a date, earlier times appear above later times.
 
 ## 2026-05-01
 
-### 05:30-05:52 - Process setup baseline
+### 2026-05-01_05:30 +08:00 — Process setup baseline (05:30–05:52)
+
 - Added OpenSpec/process scaffolding, CI workflow, PR template, ADR seed, and role documentation.
 - Imported OpenSpec skills and opsx command files into `.cursor/`.
 - Commit: `64b836f`.
 - Verification: structure checks and lint diagnostics passed.
 
-### 06:00-06:20 - Scaffold and package manager standardization
+### 2026-05-01_06:00 +08:00 — Scaffold and package manager standardization (06:00–06:20)
+
 - Created OpenSpec change: `bootstrap-nextjs-scaffold` (proposal/design/tasks/spec).
 - Bootstrapped Next.js + TypeScript app structure (`app/`, `lib/`, config files, `.env.example`).
 - Switched from npm to pnpm and updated CI/documentation.
 - Commit: `2cb3867`.
 - Verification: `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` passed.
 
-### 06:26-06:42 - CI stabilization and regression fixes
+### 2026-05-01_06:26 +08:00 — CI stabilization and regression fixes (06:26–06:42)
+
 - Fixed CI setup order for pnpm/action setup.
 - Updated pnpm pin to `10.32.0` from `10.31.0` to avoid known regressions.
 - Fixed pnpm command syntax in CI (`pnpm run --if-present <script>`), which resolved typecheck failure.
 - Commits: `aee293e`, `3696e0b`, `0cef9dd`.
 - Verification: GitHub Actions run `25192762616` completed successfully.
 
-### 06:43-06:47 - Workspace cleanup
+### 2026-05-01_06:43 +08:00 — Workspace cleanup (06:43–06:47)
+
 - Removed temporary CI reproduction worktree from git worktree tracking.
 - Main workspace remained clean.
 
-### 06:51 onward - Task tracking/logbook initialization
+### 2026-05-01_06:51 +08:00 — Task tracking/logbook initialization (06:51 onward)
+
 - Added persistent tracker and this logbook under `docs/operations/`.
 - Purpose: support unattended progress and transparent handoff.
 
-### 06:53-07:00 - Autonomous non-DB hardening batch (completed)
+### 2026-05-01_06:53 +08:00 — Autonomous non-DB hardening batch (06:53–07:00)
+
 - Added foundational utility modules: `lib/env.ts` (strict env parsing) and `lib/masking.ts` (bank-value masking helper).
 - Added test foundation with Vitest (`vitest.config.ts`, `tests/env.test.ts`, `tests/masking.test.ts`).
 - Added package-manager guard script at `scripts/check-package-manager.cjs`.
@@ -54,7 +51,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Follow-up: commit and push this non-DB hardening batch, then confirm GitHub CI status.
 - Shipped as commit `e9cd3f6`; GitHub Actions runs for that commit succeeded.
 
-### Follow-up - Security primitives and runbooks (autonomous)
+### 2026-05-01_07:30 +08:00 — Follow-up — Security primitives and runbooks (autonomous)
+
 - Added `lib/signature.ts`, `lib/normalize-bank.ts`, and AES-256-GCM token helpers in `lib/crypto.ts`.
 - Added Vitest suites: `tests/signature.test.ts`, `tests/normalize-bank.test.ts`, `tests/crypto.test.ts`.
 - Added OpenSpec change `add-security-primitives` and `docs/runbooks/key-rotation.md`.
@@ -62,23 +60,27 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally (`lint`, `typecheck`, `test`, `build`).
 - Push to `origin/main` was blocked by repository rules (CodeQL must report before the commit can land on `main`). The same commits are on `feat/security-primitives` for a PR and merge once checks pass. Open a PR from: https://github.com/josephng7/xero-alerts/pull/new/feat/security-primitives
 
-### 11:45 - Agents enforcement (process)
+### 2026-05-01_11:45 +08:00 — Agents enforcement (process)
+
 - Added `.cursor/rules/agents-enforcement.mdc` (always apply), `scripts/check-agents-compliance.cjs`, CI step `check:agents`, PR template process checkboxes, `.github/CODEOWNERS`, and expanded `pnpm run verify` to run PM + agents guards.
 - Clarified `AGENTS.md` as canonical; document guard script paths in How we work.
 - Verification: `pnpm run verify` passed locally.
 - Commit: `5093c6a`. Push to `main` blocked by CodeQL ruleset; use branch `feat/agents-enforcement` and open https://github.com/josephng7/xero-alerts/pull/new/feat/agents-enforcement
 
-### PR #2 merged (security primitives + agents enforcement)
+### 2026-05-01_12:15 +08:00 — PR #2 merged (security primitives + agents enforcement)
+
 - Merged to `main` as https://github.com/josephng7/xero-alerts/pull/2 (`feat/agents-enforcement`); merge commit `6e456f2`.
 - Local `main` fast-forwarded to match `origin/main`. Next: branch from `main` for new work; optional cleanup of stale remote branches (`feat/agents-enforcement`, `feat/security-primitives`).
 
-### DB work started (OpenSpec)
+### 2026-05-01_12:30 +08:00 — DB work started (OpenSpec)
+
 - Created change `openspec/changes/add-postgres-schema/` with `proposal.md`, `design.md`, `tasks.md`, and `specs/persistence/spec.md`.
 - Purpose: define Postgres + migrations baseline before `xero-oauth` and `webhook-intake`.
 - Tracker: `db` marked `in_progress`.
 - Verification: documentation-only; `pnpm run verify` not re-run for this log entry.
 
-### DB baseline implemented (Supabase + Drizzle)
+### 2026-05-01_14:00 +08:00 — DB baseline implemented (Supabase + Drizzle)
+
 - Postgres via **Supabase** only (no Docker Compose); `.env.example` and `design.md` updated accordingly.
 - Added `drizzle-orm`, `postgres`, `drizzle-kit`; `lib/db/schema.ts` (organizations, xero_oauth_tokens, webhook_events), `lib/db/index.ts`, `drizzle.config.ts`.
 - Generated migration `drizzle/0000_init.sql` and `drizzle/meta/*`; scripts `db:generate`, `db:migrate`, `db:studio`.
@@ -87,7 +89,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed (check:pm, check:agents, lint, typecheck, test, build).
 - Follow-up: set `DATABASE_URL` in `.env` and run `pnpm run db:migrate` against your Supabase project; add `DATABASE_URL` to GitHub Actions for migration checks on `main`/PRs from the same repo.
 
-### 15:53-16:02 - DB post-provision validation and hardening
+### 2026-05-01_15:53 +08:00 — DB post-provision validation and hardening (15:53–16:02)
+
 - Seeded Supabase dev data via MCP (`tenant_demo_001` organization + linked `xero_oauth_tokens` row) and verified joins.
 - Added DB-aware health check in `app/api/health/route.ts` (`getDb()` + server-time probe, `503` degraded when DB is unavailable).
 - Added CI drift guard in `.github/workflows/ci.yml`: run `pnpm run db:generate` and fail on `git diff -- drizzle`.
@@ -96,7 +99,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally after updates.
 - Follow-up: replace demo encrypted token values with real encrypted outputs once OAuth flow lands; add authenticated-user policies when app-level reads/writes are introduced.
 
-### 23:56-00:06 - Xero OAuth foundation implementation
+### 2026-05-01_23:56 +08:00 — Xero OAuth foundation implementation (23:56–00:06 next day)
+
 - Created OpenSpec change `add-xero-oauth-foundation` (`proposal.md`, `design.md`, `tasks.md`, `specs/oauth/spec.md`).
 - Implemented OAuth helpers in `lib/xero/oauth.ts` (state generation, authorize URL, token exchange, tenant connection lookup).
 - Implemented token persistence helper in `lib/db/xero-oauth.ts` to upsert `organizations` and encrypted `xero_oauth_tokens`.
@@ -108,7 +112,9 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Follow-up: implement refresh token lock/version update path and add callback tests with mocked `fetch`.
 
 ## 2026-05-02
-### 00:06-00:11 - Xero OAuth refresh lock semantics
+
+### 2026-05-02_00:06 +08:00 — Xero OAuth refresh lock semantics (00:06–00:11)
+
 - Created OpenSpec change `add-xero-refresh-lock` (`proposal.md`, `design.md`, `tasks.md`, `specs/oauth-refresh/spec.md`).
 - Extended `lib/xero/oauth.ts` with `refreshAccessToken` helper for `grant_type=refresh_token`.
 - Added `lib/xero/refresh.ts` to retrieve tenant token with optimistic concurrency (`token_version` compare-and-swap), including one retry on conflict.
@@ -116,7 +122,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - Follow-up: wire `getTenantAccessToken` into upcoming worker/API paths (`poll-org`, `snapshot-bootstrap`) and add integration tests for concurrent refresh races.
 
-### 00:11-00:18 - Snapshot bootstrap endpoint
+### 2026-05-02_00:11 +08:00 — Snapshot bootstrap endpoint (00:11–00:18)
+
 - Created OpenSpec change `add-snapshot-bootstrap` (`proposal.md`, `design.md`, `tasks.md`, `specs/snapshots/spec.md`).
 - Added `account_snapshots` model + migration `drizzle/0002_account_snapshots.sql` (FK to organizations, unique per org, RLS + service role policy).
 - Implemented `lib/xero/accounts.ts` to fetch Xero accounts and map BANK entries into snapshot shape.
@@ -126,7 +133,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - Follow-up: run migration `0002_account_snapshots` in Supabase environments and add integration test that mocks Xero response + DB write path.
 
-### 00:18-00:24 - Webhook intake implementation
+### 2026-05-02_00:18 +08:00 — Webhook intake implementation (00:18–00:24)
+
 - Created OpenSpec change `add-webhook-intake` (`proposal.md`, `design.md`, `tasks.md`, `specs/webhook-intake/spec.md`).
 - Implemented `POST /api/webhooks/xero` with:
   - `x-xero-signature` verification via existing HMAC helper,
@@ -138,7 +146,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - Follow-up: implement `/api/jobs/process-event` consumer and add integration tests for duplicate re-delivery + queue publish behavior.
 
-### 00:24-00:31 - Process-event worker and diff logic
+### 2026-05-02_00:24 +08:00 — Process-event worker and diff logic (00:24–00:31)
+
 - Created OpenSpec change `add-process-event-diff` (`proposal.md`, `design.md`, `tasks.md`, `specs/process-event/spec.md`).
 - Implemented `/api/jobs/process-event` to:
   - load webhook event by `webhookEventId` or `idempotencyKey`,
@@ -153,7 +162,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed locally (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - Follow-up: add processed-state marker for webhook events and integration tests that mock Xero + queue payload envelopes.
 
-### 00:25-00:33 - Parallel implementation batch (poll-org, notify, security hardening)
+### 2026-05-02_00:25 +08:00 — Parallel implementation batch — poll-org, notify, security hardening (00:25–00:33)
+
 - Executed three concurrent agent tracks and merged results without overlapping-doc conflicts.
 - Poll-org track (`add-poll-org-accounts-staleness`):
   - Implemented `POST /api/cron/poll-org-accounts` with tenant validation, pre/post staleness evaluation, token retrieval, Xero fetch, and snapshot upsert.
@@ -169,7 +179,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: each track ran `pnpm run verify`; parent integration verification also run post-merge.
 - Follow-up: complete notify digest/dedup persistence, add internal auth/RBAC on admin/worker endpoints, and continue with remaining backlog items (`ui`, `tests`, `docs`).
 
-### 00:35-00:47 - Parallel wave 2 (notify dedupe, security auth, UI baseline, tests/docs)
+### 2026-05-02_00:35 +08:00 — Parallel wave 2 — notify dedupe, security auth, UI baseline, tests/docs (00:35–00:47)
+
 - Ran four concurrent subagent tracks with evidence-first decision constraints (alternatives compared before implementation).
 - Notify completion (`complete-notify-dedupe-integration`):
   - Added `notify_dispatches` persistence (`drizzle/0003_notify_dispatches.sql`) and schema support.
@@ -190,7 +201,8 @@ This is a chronological operator log. Each entry records what changed, why, and 
 - Verification: `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - Follow-up: implement RBAC role model and secret-rotation workflow for internal auth, complete alert UI end-to-end state/actions, and add deeper integration/chaos tests.
 
-### 07:30-08:00 - Parallel wave 3 (alerts MVP, split internal secrets, go-live/tests)
+### 2026-05-02_07:30 +08:00 — Parallel wave 3 — alerts MVP, split internal secrets, go-live/tests (07:30–08:00)
+
 - Ran three concurrent subagent tracks and reconciled in one working tree (no merge conflicts).
 - Track 1 — Alerts (`add-alerts-mvp`): `drizzle/0004_alerts.sql`, `lib/db/alerts.ts`, admin-auth `GET /api/alerts`, `GET /api/alerts/[id]`, `POST /api/alerts/[id]/ack`, process-event creates alert rows on actionable bank diff, UI wired via `lib/ui/alerts-data.ts` + server actions.
 - Track 2 — Internal auth split (`split-internal-api-secrets`): `INTERNAL_CRON_SECRET` / `INTERNAL_ADMIN_SECRET` (+ optional `*_PREVIOUS`), routes updated to cron vs admin validators; runbook `docs/runbooks/internal-api-secret-rotation.md`.
@@ -205,16 +217,46 @@ This is a chronological operator log. Each entry records what changed, why, and 
 
 ## 2026-05-03
 
-### CodeQL js/request-forgery (alert #4)
+### 2026-05-03_02:59 +08:00 — NEXTAUTH_URL priority, default QStash API URL, env example + runbooks (commit `7db2cf2`)
+
+- `.env.example`: restored uncommented `KEY=` rows for variables operators may set; omit only runtime-injected keys (`NODE_ENV`, `VERCEL_URL`); optional keys documented in comments where trimmed.
+- Derived public URL via `getAppBaseUrl()` (`NEXTAUTH_URL` → `VERCEL_URL` → localhost); default QStash origin `https://qstash.upstash.io` when `QSTASH_URL` unset.
+- Updated README, `docs/runbooks/go-live.md`, `docs/runbooks/webhook-pipeline.md`; extended webhook route tests.
+- Verification: `pnpm run verify` passed.
+
+### 2026-05-03_03:25 +08:00 — CodeQL js/request-forgery (alert #4) (commit `33ef262`)
+
 - **Issue:** GitHub Code scanning flagged server-side request forgery in `app/alerts/[id]/ack-action.ts` — `fetch` URL path included user-supplied `alertId` without validation ([alert](https://github.com/josephng7/xero-alerts/security/code-scanning/4)).
 - **Change:** Added `lib/server/alert-id.ts` with `parseAlertId()` (`z.string().uuid()`), used in `submitAlertAck` and `getUiAlertById` before building internal API URLs; added `tests/alert-id.test.ts`.
 - **Verification:** `pnpm run verify` passed (`check:pm`, `check:agents`, `lint`, `typecheck`, `test`, `build`).
 - **Follow-up:** Merge via PR to `main`; after CodeQL re-runs, dismiss or confirm alert closed; unblock dependent PRs.
 
+### 2026-05-03_03:52 +08:00 — Optional env blanks normalize to unset (commit `f465014`)
+
+- **Cause:** Zod `.optional()` does not treat `""` as missing; empty Vercel fields broke URL/email validation at startup.
+- **Change:** `normalizeEnvInput()` in `lib/env.ts`; `tests/env.test.ts`; task-tracker note.
+- Branch: `fix/env-blank-optional`. Verification: `pnpm run verify` passed.
+
+## 2026-05-04
+
+### 2026-05-04_10:29 +08:00 — Go-live runbook + QStash internal-secret forward (commit `2e98ab3`)
+
+- Context: align `docs/runbooks/go-live.md` with `lib/env.ts` and route-level requirements; QStash deliveries to `POST /api/jobs/process-event` must send `x-internal-api-secret`.
+- Rewrote go-live doc: validation behavior, Vercel notes, requirements by goal (health, OAuth, webhooks, worker, cron, UI, notify), full variable reference (schema-only vs used).
+- Code: `enqueueProcessEventJob` adds `Upstash-Forward-x-internal-api-secret`; webhook route returns 500 if `QSTASH_TOKEN` is set without `INTERNAL_ADMIN_SECRET`.
+- Files: `docs/runbooks/go-live.md`, `lib/queue/qstash.ts`, `app/api/webhooks/xero/route.ts`, `tests/webhooks-xero-route.test.ts`, `tests/workflow-webhook-queue-xero-fetch.test.ts`, `docs/operations/task-tracker.md`.
+- Branch: `fix/env-blank-optional`. Verification: `pnpm run verify` passed.
+
+### 2026-05-04_10:34 +08:00 — Logbook session notes expanded (commit `15d65e4`)
+
+- Added commit table and file lists for the prod-env / go-live / QStash work (later revised into timestamped headings in this log).
+- Verification: documentation-only.
+
 ## Logging Rules
 
 For each future work block, append:
-1. Time window
+
+1. Heading: **`YYYY-MM-DD_HH:mm +08:00`** — short title (optionally note original time range or commit in the title).
 2. Scope/tasks touched
 3. Commit hash(es)
 4. Verification performed

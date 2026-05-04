@@ -54,12 +54,22 @@ export async function POST(request: Request) {
   }
 
   if (env.QSTASH_TOKEN) {
+    if (!env.INTERNAL_ADMIN_SECRET) {
+      return NextResponse.json(
+        {
+          message:
+            "Queue handoff requires INTERNAL_ADMIN_SECRET so QStash can forward x-internal-api-secret to the worker"
+        },
+        { status: 500 }
+      );
+    }
     const qstashUrl = env.QSTASH_URL ?? DEFAULT_QSTASH_URL;
     try {
       const enqueue = await enqueueProcessEventJob({
         qstashUrl,
         qstashToken: env.QSTASH_TOKEN,
         callbackBaseUrl: getAppBaseUrl(),
+        internalApiSecret: env.INTERNAL_ADMIN_SECRET,
         payload: {
           webhookEventId: recorded.webhookEventId,
           idempotencyKey: recorded.idempotencyKey

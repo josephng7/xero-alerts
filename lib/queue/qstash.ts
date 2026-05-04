@@ -6,6 +6,8 @@ export async function enqueueProcessEventJob(params: {
   qstashToken: string;
   callbackBaseUrl: string;
   payload: unknown;
+  /** Forwarded to the destination URL as `x-internal-api-secret` (QStash `Upstash-Forward-*`). */
+  internalApiSecret: string;
 }) {
   const target = new URL("/api/jobs/process-event", params.callbackBaseUrl).toString();
   const publishUrl = `${params.qstashUrl.replace(/\/$/, "")}/v2/publish/${encodeURIComponent(target)}`;
@@ -14,7 +16,8 @@ export async function enqueueProcessEventJob(params: {
     method: "POST",
     headers: {
       Authorization: `Bearer ${params.qstashToken}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Upstash-Forward-x-internal-api-secret": params.internalApiSecret
     },
     body: JSON.stringify(params.payload)
   });
