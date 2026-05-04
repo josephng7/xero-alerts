@@ -4,6 +4,18 @@ import { pipelineDebug } from "@/lib/server/pipeline-debug";
 export const DEFAULT_QSTASH_URL = "https://qstash.upstash.io";
 
 /**
+ * QStash HTTP API is always `<origin>/v2/publish/<encoded-destination>`.
+ * If `QSTASH_URL` mistakenly includes `/v2/publish/` (older docs/dashboard copy-paste),
+ * concatenating our own `/v2/publish/` breaks the request; Upstash may respond with
+ * `invalid destination url: endpoint has invalid scheme`.
+ */
+export function normalizeQstashApiOrigin(input: string): string {
+  const trimmed = input.trim().replace(/\/+$/, "");
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  return new URL(withScheme).origin;
+}
+
+/**
  * Publish a POST delivery to QStash for an absolute destination URL.
  * QStash will POST `payload` as JSON and forward `internalApiSecret` as `x-internal-api-secret`.
  */
@@ -14,7 +26,7 @@ export async function publishQstashJob(params: {
   internalApiSecret: string;
   payload: unknown;
 }): Promise<{ messageId: string | null }> {
-  const qstashOrigin = params.qstashUrl.replace(/\/$/, "");
+  const qstashOrigin = normalizeQstashApiOrigin(params.qstashUrl);
   let destinationHost = "";
   try {
     destinationHost = new URL(params.destinationUrl).host;
