@@ -182,6 +182,7 @@ describe("POST /api/cron/poll-org-accounts", () => {
       previousFetchedAt: "2026-05-02T00:10:00.000Z"
     });
     expect(getSnapshotStalenessMock).toHaveBeenCalledWith({ tenantId: "tenant-1" });
+    expect(fetchContactBankLineSnapshotMock).toHaveBeenCalledWith("access-token", "tenant-1");
     expect(saveAccountSnapshotMock).toHaveBeenCalledWith({
       tenantId: "tenant-1",
       source: "xero_poll",

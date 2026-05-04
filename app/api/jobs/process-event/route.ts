@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       xeroClientId: env.XERO_CLIENT_ID,
       xeroClientSecret: env.XERO_CLIENT_SECRET
     });
-    const currentLines = await fetchContactBankLineSnapshot(token.accessToken);
+    const currentLines = await fetchContactBankLineSnapshot(token.accessToken, tenantId);
     const diff = diffBankAccountSnapshots({
       previous: previousSnapshot?.contactBankLines ?? [],
       current: currentLines

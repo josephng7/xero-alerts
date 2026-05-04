@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       xeroClientId: env.XERO_CLIENT_ID,
       xeroClientSecret: env.XERO_CLIENT_SECRET
     });
-    const lines = await fetchContactBankLineSnapshot(token.accessToken);
+    const lines = await fetchContactBankLineSnapshot(token.accessToken, body.tenantId);
     const persisted = await saveAccountSnapshot({
       tenantId: body.tenantId,
       source: SNAPSHOT_SOURCE,

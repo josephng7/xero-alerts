@@ -207,6 +207,7 @@ describe("POST /api/jobs/process-event", () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
+    expect(hoisted.fetchContactBankLineSnapshotMock).toHaveBeenCalledWith("token-1", "tenant-1");
     expect(json.message).toBe("Webhook event processed");
     expect(json.tenantId).toBe("tenant-1");
     expect(json.idempotencyKey).toBe("idem-1");
