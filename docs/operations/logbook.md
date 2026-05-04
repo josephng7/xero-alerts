@@ -262,6 +262,11 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - **Scope:** `formatOpsDateTime` in `lib/ui/format-ops-datetime.tsx`; dashboard + alert detail; tracker row `ui-datetime-tz`.
 - **Verification:** `pnpm run verify`.
 
+### 2026-05-04_12:55 +08:00 — Playwright E2E smoke in CI (PR split 3/3)
+
+- **Scope:** `add-e2e-playwright-smoke`; CI Chromium + `pnpm run test:e2e` after build; README install note.
+- **Verification:** `pnpm run verify`; `pnpm run build` + `pnpm run test:e2e`.
+
 ## Logging Rules
 
 For each future work block, append:

@@ -28,7 +28,7 @@ This tracker is the execution board for the project plan. It is updated continuo
 | domain-email | Configure alert domain + SPF/DKIM/DMARC + Resend domain | pending | External infra task. |
 | backups | Weekly backup + quarterly restore process | pending | Requires managed Postgres decision. |
 | chaos-tests | Failure injection scenarios and resilience tests | pending | After core pipeline completion. |
-| tests | Unit/integration/E2E test suite completion | in_progress | **Wave 3 complete:** workflow integration test + internal-auth tests; suite green. Deeper E2E/chaos still pending. |
+| tests | Unit/integration/E2E test suite completion | in_progress | **Wave 3 complete:** workflow integration test + internal-auth tests; suite green. **E2E smoke:** `@playwright/test` + `e2e/smoke.spec.ts`; CI installs Chromium and runs `pnpm run test:e2e` after build. **Deeper E2E** / chaos still pending. |
 | docs | Final setup/runbook docs for operations and rotation | in_progress | **Wave 3 complete:** `docs/runbooks/go-live.md`, README pointer, internal secret rotation runbook. Added **`docs/architecture/`** baseline (platform/trust diagrams; OpenSpec `add-docs-architecture-baseline`). **2026-05-03:** `.env.example` + runbooks aligned with derived public URL and default QStash API URL. **`lib/env`:** blank optional env values (empty/whitespace) normalize to unset. **`go-live.md`:** per-goal env matrix + schema-only vars; **QStash:** publish forwards internal secret (`lib/queue/qstash.ts`). **`logbook.md`:** headings `YYYY-MM-DD_HH:mm +08:00`, sections oldest-first. Final polish/E2E operator doc pass still optional. |
 
 ## Active Session Queue (Autonomous)
