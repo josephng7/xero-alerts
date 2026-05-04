@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
   }
 
-  pipelineDebug("process_event_start", {
+  await pipelineDebug("process_event_start", {
     webhookEventId: body.webhookEventId,
     idempotencyKeyPrefix: body.idempotencyKey?.slice(0, 12)
   });

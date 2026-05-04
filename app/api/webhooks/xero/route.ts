@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   const recorded = await recordWebhookEvent({ rawBody, payload });
   if (!recorded.inserted) {
-    pipelineDebug("webhook_xero_duplicate", {
+    await pipelineDebug("webhook_xero_duplicate", {
       idempotencyKeyPrefix: recorded.idempotencyKey.slice(0, 12)
     });
     return NextResponse.json(
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     );
   }
 
-  pipelineDebug("webhook_xero_inserted", {
+  await pipelineDebug("webhook_xero_inserted", {
     webhookEventId: recorded.webhookEventId,
     idempotencyKeyPrefix: recorded.idempotencyKey.slice(0, 12),
     hasQstashToken: Boolean(env.QSTASH_TOKEN)
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }
     const qstashUrl = env.QSTASH_URL ?? DEFAULT_QSTASH_URL;
     const callbackBaseUrl = getAppBaseUrl();
-    pipelineDebug("webhook_xero_enqueue_start", {
+    await pipelineDebug("webhook_xero_enqueue_start", {
       qstashApiHost: new URL(qstashUrl).host,
       callbackBaseHost: new URL(callbackBaseUrl).host
     });
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
         }
       });
 
-      pipelineDebug("webhook_xero_enqueue_ok", { messageId: enqueue.messageId });
+      await pipelineDebug("webhook_xero_enqueue_ok", { messageId: enqueue.messageId });
       return NextResponse.json(
         {
           message: "Webhook accepted and queued",
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Queue publish failed";
       console.error("[webhook:xero] queue_publish_failed", message);
-      pipelineDebug("webhook_xero_enqueue_error", {
+      await pipelineDebug("webhook_xero_enqueue_error", {
         errorPrefix: message.slice(0, 240)
       });
       return NextResponse.json(
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
     }
   }
 
-  pipelineDebug("webhook_xero_queue_skipped", { reason: "no_qstash_token" });
+  await pipelineDebug("webhook_xero_queue_skipped", { reason: "no_qstash_token" });
   return NextResponse.json(
     {
       message: "Webhook accepted (queue not configured)",

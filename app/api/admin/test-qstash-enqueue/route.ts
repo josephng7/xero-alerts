@@ -91,7 +91,7 @@ export async function POST(request: Request) {
           ...(body.idempotencyKey ? { idempotencyKey: body.idempotencyKey } : {})
         };
 
-  pipelineDebug("admin_test_qstash_enqueue", { target, destinationHost: new URL(destinationUrl).host });
+  await pipelineDebug("admin_test_qstash_enqueue", { target, destinationHost: new URL(destinationUrl).host });
 
   try {
     const result = await publishQstashJob({

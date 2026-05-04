@@ -19,6 +19,11 @@ vi.mock("@/lib/db/webhook-events", () => ({
   recordWebhookEvent: hoisted.recordWebhookEventMock
 }));
 
+vi.mock("@/lib/server/pipeline-debug", () => ({
+  pipelineDebug: vi.fn().mockResolvedValue(undefined),
+  invalidatePipelineDebugCache: vi.fn()
+}));
+
 vi.mock("@/lib/queue/qstash", () => ({
   DEFAULT_QSTASH_URL: "https://qstash.upstash.io",
   enqueueProcessEventJob: hoisted.enqueueProcessEventJobMock

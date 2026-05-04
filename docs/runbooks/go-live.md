@@ -138,7 +138,7 @@ See `docs/runbooks/internal-api-secret-rotation.md`.
 | `QSTASH_URL`                 | Optional API origin; defaults when unset (see `DEFAULT_QSTASH_URL`).     |
 | `QSTASH_CURRENT_SIGNING_KEY` | Schema only — **not used by routes for verification today**.             |
 | `QSTASH_NEXT_SIGNING_KEY`    | Schema only — reserved for future receiver verification.                |
-| `PIPELINE_DEBUG`             | Optional. Set to **`1`** for structured **`[pipeline]`** logs (webhook enqueue, QStash publish, `process-event` start). Secrets are never logged. |
+| `PIPELINE_DEBUG`             | Optional **override**: **`1`** forces **`[pipeline]`** logs even when the DB flag is off. Primary control is **`app_runtime_settings.pipeline_debug`** (see step 7). |
 
 ### Notifications
 
@@ -188,7 +188,13 @@ See `docs/runbooks/internal-api-secret-rotation.md`.
        -Headers $headers -ContentType "application/json" `
        -Body '{"target":"process-event","webhookEventId":"<uuid-from-webhook_events>"}'
      ```
-   - **Verbose logs:** set **`PIPELINE_DEBUG=1`** temporarily to emit **`[pipeline]`** lines in Vercel function logs (`lib/server/pipeline-debug.ts`).
+   - **Verbose `[pipeline]` logs (no redeploy):** after migrations create **`app_runtime_settings`**, use **`GET`** / **`PATCH /api/admin/runtime-settings`** with header **`x-internal-api-secret`**. `PATCH` body: **`{"pipelineDebug": true}`** (or **`false`**). Responses include **`envOverride: true`** when **`PIPELINE_DEBUG=1`** is set in Vercel (env wins over DB for *enabling* logs). Cache TTL is short; toggles take effect within ~15s without restart.
+
+     ```powershell
+     Invoke-RestMethod -Method Patch -Uri "$base/api/admin/runtime-settings" `
+       -Headers $headers -ContentType "application/json" `
+       -Body '{"pipelineDebug":true}'
+     ```
 8. **Notifications**: Configure Teams and/or Resend; run a controlled test after the first successful process-event.
 
 ---

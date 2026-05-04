@@ -40,6 +40,11 @@ vi.mock("@/lib/jobs/notify", () => ({
   runNotifyJob: hoisted.runNotifyJobMock
 }));
 
+vi.mock("@/lib/server/pipeline-debug", () => ({
+  pipelineDebug: vi.fn().mockResolvedValue(undefined),
+  invalidatePipelineDebugCache: vi.fn()
+}));
+
 import { POST } from "@/app/api/jobs/process-event/route";
 
 describe("POST /api/jobs/process-event", () => {

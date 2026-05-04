@@ -6,10 +6,10 @@ Operators could not confirm QStash publish from production using only Xero webho
 
 ## Change
 
-- Add `PIPELINE_DEBUG=1` gated `[pipeline]` logs across webhook intake, QStash publish, and `process-event` entry (no secret values).
+- Add `[pipeline]` logs across webhook intake, QStash publish, and `process-event` entry (no secret values), enabled when **`PIPELINE_DEBUG=1`** (env override) **or** **`app_runtime_settings.pipeline_debug`** (Postgres singleton row, toggled via `GET`/`PATCH /api/admin/runtime-settings` without redeploy; short in-process cache).
 - Add `POST /api/admin/test-qstash-enqueue` (admin-authenticated) to publish a QStash message to a dedicated smoke callback `POST /api/admin/qstash-smoke`, reusing the same publish helper as webhook enqueue.
 - Refactor `lib/queue/qstash.ts` to expose `publishQstashJob` for arbitrary destinations while keeping `enqueueProcessEventJob` behavior unchanged.
 
 ## Security
 
-Both new admin routes require `x-internal-api-secret` matching `INTERNAL_ADMIN_SECRET`, consistent with other admin endpoints.
+Admin routes (`test-qstash-enqueue`, `qstash-smoke`, `runtime-settings`) require `x-internal-api-secret` matching `INTERNAL_ADMIN_SECRET`, consistent with other admin endpoints.

@@ -24,7 +24,7 @@ export async function publishQstashJob(params: {
 
   const publishUrl = `${qstashOrigin}/v2/publish/${encodeURIComponent(params.destinationUrl)}`;
 
-  pipelineDebug("qstash_publish_start", {
+  await pipelineDebug("qstash_publish_start", {
     qstashApiHost: new URL(qstashOrigin).host,
     destinationHost
   });
@@ -41,7 +41,7 @@ export async function publishQstashJob(params: {
 
   if (!response.ok) {
     const text = await response.text();
-    pipelineDebug("qstash_publish_http_error", {
+    await pipelineDebug("qstash_publish_http_error", {
       status: response.status,
       bodyPrefix: text.slice(0, 200)
     });
@@ -50,7 +50,7 @@ export async function publishQstashJob(params: {
 
   const body = (await response.json().catch(() => ({}))) as { messageId?: string };
   const messageId = body.messageId ?? null;
-  pipelineDebug("qstash_publish_ok", { messageId, destinationHost });
+  await pipelineDebug("qstash_publish_ok", { messageId, destinationHost });
   return { messageId };
 }
 

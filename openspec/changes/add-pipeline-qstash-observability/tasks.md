@@ -2,3 +2,4 @@
 - [x] Add `lib/server/pipeline-debug.ts` and wire `PIPELINE_DEBUG` logging
 - [x] Add `POST /api/admin/test-qstash-enqueue` and `POST /api/admin/qstash-smoke`
 - [x] Document in README, go-live, `.env.example`; Vitest for admin test route
+- [x] DB-backed `pipeline_debug` + `GET`/`PATCH /api/admin/runtime-settings`; migration `0005_sticky_tattoo`

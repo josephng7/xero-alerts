@@ -271,6 +271,7 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 
 - **Scope:** OpenSpec `add-pipeline-qstash-observability`; `PIPELINE_DEBUG=1` gated `[pipeline]` logs (`lib/server/pipeline-debug.ts`); webhook + `process-event` instrumentation; refactor `publishQstashJob` in `lib/queue/qstash.ts`; admin routes `POST /api/admin/test-qstash-enqueue` and `POST /api/admin/qstash-smoke`; Vitest `tests/admin-test-qstash-enqueue-route.test.ts`; README + `go-live.md` + `.env.example`.
 - **Follow-up:** `test-qstash-enqueue` `idempotencyKey` max length aligned to **`128`** with `process-event` (was `2048`) so QStash deliveries are not rejected by worker Zod.
+- **Follow-up:** **`app_runtime_settings.pipeline_debug`** + **`GET`/`PATCH /api/admin/runtime-settings`** for `[pipeline]` logs without redeploy; optional **`PIPELINE_DEBUG=1`** env override; migration **`0005_sticky_tattoo`** (`lib/db/app-runtime-settings.ts`).
 - **Verification:** `pnpm run verify` (branch `feat/qstash-pipeline-debug`).
 
 ## Logging Rules

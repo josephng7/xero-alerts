@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   jsonb,
   pgTable,
@@ -36,6 +37,13 @@ export const xeroOauthTokens = pgTable(
   },
   (t) => [uniqueIndex("xero_oauth_tokens_org_uidx").on(t.organizationId)]
 );
+
+/** Singleton row `id = 1` for operator-tunable runtime flags (see migration seed). */
+export const appRuntimeSettings = pgTable("app_runtime_settings", {
+  id: integer("id").primaryKey(),
+  pipelineDebug: boolean("pipeline_debug").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
 
 export const webhookEvents = pgTable(
   "webhook_events",

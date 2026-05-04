@@ -31,6 +31,11 @@ vi.mock("@/lib/queue/qstash", () => ({
   enqueueProcessEventJob: hoisted.enqueueProcessEventJobMock
 }));
 
+vi.mock("@/lib/server/pipeline-debug", () => ({
+  pipelineDebug: vi.fn().mockResolvedValue(undefined),
+  invalidatePipelineDebugCache: vi.fn()
+}));
+
 vi.mock("@/lib/db/process-event", () => ({
   getWebhookEventForProcessing: hoisted.getWebhookEventForProcessingMock,
   getLatestAccountSnapshotByTenant: hoisted.getLatestAccountSnapshotByTenantMock

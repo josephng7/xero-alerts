@@ -23,6 +23,6 @@ export async function POST(request: Request) {
     hasJsonBody = false;
   }
 
-  pipelineDebug("admin_qstash_smoke_received", { hasJsonBody });
+  await pipelineDebug("admin_qstash_smoke_received", { hasJsonBody });
   return NextResponse.json({ ok: true, receivedAt: new Date().toISOString() }, { status: 200 });
 }
