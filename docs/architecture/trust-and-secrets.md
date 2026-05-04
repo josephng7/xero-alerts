@@ -8,7 +8,7 @@ This page summarizes **who authenticates what**. Operational steps (env vars, ro
 | ------ | --------- | -------- |
 | **Xero** → `POST /api/webhooks/xero` | `x-xero-signature` HMAC using `XERO_WEBHOOK_KEY` | Only genuine Xero-delivered payloads are accepted. |
 | **Scheduled poller** → `POST /api/cron/poll-org-accounts` | Header `x-internal-api-secret` must match `INTERNAL_CRON_SECRET` (or `INTERNAL_CRON_SECRET_PREVIOUS` during rotation). | Cron-only routes. |
-| **Queue / jobs / admin / alerts APIs** → `POST /api/jobs/*`, `POST /api/admin/*`, `GET/POST /api/alerts/*` | Same header name; value must match `INTERNAL_ADMIN_SECRET` (or `INTERNAL_ADMIN_SECRET_PREVIOUS`). | Worker handoff, admin sync, alert read/ack. |
+| **Queue / jobs / admin / alerts APIs** → `POST /api/jobs/*`, `POST /api/admin/*`, `GET/PATCH /api/admin/runtime-settings`, `GET/POST /api/alerts/*` | Same header name; value must match `INTERNAL_ADMIN_SECRET` (or `INTERNAL_ADMIN_SECRET_PREVIOUS`). | Worker handoff, admin sync, runtime flags, alert read/ack. |
 
 The header name is always **`x-internal-api-secret`**; **which secret value** is valid depends on the route class (**cron** vs **admin/job**) as implemented in `lib/auth/internal-route-auth.ts`.
 

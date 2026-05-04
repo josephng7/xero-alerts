@@ -44,6 +44,9 @@ Implemented worker and ops endpoints:
 - `/api/jobs/notify`: validates diff payloads, no-ops when no actionable changes, and fans out Teams + email notifications.
 - `/api/cron/poll-org-accounts`: polls one tenant, persists snapshot, and returns before/after staleness summary.
 - `/api/admin/sync-snapshots`: manually syncs one tenant snapshot with the same tenant guard.
+- `/api/admin/test-qstash-enqueue`: operator-only QStash publish smoke test (default target is `/api/admin/qstash-smoke`).
+- `/api/admin/qstash-smoke`: internal callback used only by the QStash smoke test.
+- `/api/admin/runtime-settings`: read or update operator runtime flags (e.g. `pipeline_debug` for `[pipeline]` logs) without redeploying.
 
 OAuth and status endpoints:
 
@@ -61,7 +64,7 @@ Minimum env set for webhook-to-notify flow:
 - `TOKEN_ENCRYPTION_KEY`
 - `DATABASE_URL`
 - `INTERNAL_CRON_SECRET` (cron routes such as `/api/cron/poll-org-accounts`)
-- `INTERNAL_ADMIN_SECRET` (admin and job routes: `/api/admin/sync-snapshots`, `/api/jobs/process-event`, `/api/jobs/notify`)
+- `INTERNAL_ADMIN_SECRET` (admin and job routes: `/api/admin/sync-snapshots`, `/api/admin/test-qstash-enqueue`, `/api/admin/qstash-smoke`, `/api/admin/runtime-settings`, `/api/jobs/process-event`, `/api/jobs/notify`)
 
 Public origin for OAuth redirects and QStash job URLs is inferred from optional `NEXTAUTH_URL`, then `VERCEL_URL` on Vercel, then `http://localhost:3000` (`lib/server/app-base-url.ts`). Set `NEXTAUTH_URL` when your public URL must differ from `VERCEL_URL` (for example a custom domain).
 
@@ -73,6 +76,7 @@ Optional but commonly required:
 
 - `XERO_ALLOWED_TENANT_ID` (single-tenant guard)
 - `QSTASH_TOKEN` (queue handoff; QStash API URL defaults to `https://qstash.upstash.io` unless you set `QSTASH_URL`)
+- `PIPELINE_DEBUG=1` (optional **override**: forces `[pipeline]` logs even when DB flag is off). Primary toggle: **`app_runtime_settings.pipeline_debug`** via `GET`/`PATCH /api/admin/runtime-settings` (requires **`pnpm run db:migrate`** for the `app_runtime_settings` table).
 - `TEAMS_WEBHOOK_URL`, `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL` (notifications)
 
 ## Worktree Convention

@@ -45,6 +45,11 @@ vi.mock("@/lib/db/alerts", () => ({
   createAlertFromProcessEventDiff: hoisted.createAlertFromProcessEventDiffMock
 }));
 
+vi.mock("@/lib/server/pipeline-debug", () => ({
+  pipelineDebug: vi.fn().mockResolvedValue(undefined),
+  invalidatePipelineDebugCache: vi.fn()
+}));
+
 import { POST as processEventPost } from "@/app/api/jobs/process-event/route";
 import { POST as webhookPost } from "@/app/api/webhooks/xero/route";
 

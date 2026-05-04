@@ -4,6 +4,7 @@ import { recordWebhookEvent } from "@/lib/db/webhook-events";
 import { getEnv } from "@/lib/env";
 import { DEFAULT_QSTASH_URL, enqueueProcessEventJob } from "@/lib/queue/qstash";
 import { getAppBaseUrl } from "@/lib/server/app-base-url";
+import { pipelineDebug } from "@/lib/server/pipeline-debug";
 import { verifyXeroWebhookSignature } from "@/lib/signature";
 
 const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
 
   const recorded = await recordWebhookEvent({ rawBody, payload });
   if (!recorded.inserted) {
+    await pipelineDebug("webhook_xero_duplicate", {
+      idempotencyKeyPrefix: recorded.idempotencyKey.slice(0, 12)
+    });
     return NextResponse.json(
       {
         message: "Duplicate webhook ignored",
@@ -52,6 +56,12 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   }
+
+  await pipelineDebug("webhook_xero_inserted", {
+    webhookEventId: recorded.webhookEventId,
+    idempotencyKeyPrefix: recorded.idempotencyKey.slice(0, 12),
+    hasQstashToken: Boolean(env.QSTASH_TOKEN)
+  });
 
   if (env.QSTASH_TOKEN) {
     if (!env.INTERNAL_ADMIN_SECRET) {
@@ -64,11 +74,16 @@ export async function POST(request: Request) {
       );
     }
     const qstashUrl = env.QSTASH_URL ?? DEFAULT_QSTASH_URL;
+    const callbackBaseUrl = getAppBaseUrl();
+    await pipelineDebug("webhook_xero_enqueue_start", {
+      qstashApiHost: new URL(qstashUrl).host,
+      callbackBaseHost: new URL(callbackBaseUrl).host
+    });
     try {
       const enqueue = await enqueueProcessEventJob({
         qstashUrl,
         qstashToken: env.QSTASH_TOKEN,
-        callbackBaseUrl: getAppBaseUrl(),
+        callbackBaseUrl,
         internalApiSecret: env.INTERNAL_ADMIN_SECRET,
         payload: {
           webhookEventId: recorded.webhookEventId,
@@ -76,6 +91,7 @@ export async function POST(request: Request) {
         }
       });
 
+      await pipelineDebug("webhook_xero_enqueue_ok", { messageId: enqueue.messageId });
       return NextResponse.json(
         {
           message: "Webhook accepted and queued",
@@ -86,6 +102,10 @@ export async function POST(request: Request) {
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : "Queue publish failed";
+      console.error("[webhook:xero] queue_publish_failed", message);
+      await pipelineDebug("webhook_xero_enqueue_error", {
+        errorPrefix: message.slice(0, 240)
+      });
       return NextResponse.json(
         {
           message: "Webhook stored but queue handoff failed",
@@ -97,6 +117,7 @@ export async function POST(request: Request) {
     }
   }
 
+  await pipelineDebug("webhook_xero_queue_skipped", { reason: "no_qstash_token" });
   return NextResponse.json(
     {
       message: "Webhook accepted (queue not configured)",

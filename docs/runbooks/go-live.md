@@ -138,6 +138,7 @@ See `docs/runbooks/internal-api-secret-rotation.md`.
 | `QSTASH_URL`                 | Optional API origin; defaults when unset (see `DEFAULT_QSTASH_URL`).     |
 | `QSTASH_CURRENT_SIGNING_KEY` | Schema only — **not used by routes for verification today**.             |
 | `QSTASH_NEXT_SIGNING_KEY`    | Schema only — reserved for future receiver verification.                |
+| `PIPELINE_DEBUG`             | Optional **override**: **`1`** forces **`[pipeline]`** logs even when the DB flag is off. Primary control is **`app_runtime_settings.pipeline_debug`** (see step 7). |
 
 ### Notifications
 
@@ -169,6 +170,31 @@ See `docs/runbooks/internal-api-secret-rotation.md`.
 
    Use the same **`XERO_WEBHOOK_KEY`** as in the portal for signature verification.
 7. **QStash**: If using queue mode, set **`QSTASH_TOKEN`** and **`INTERNAL_ADMIN_SECRET`** (and optionally **`QSTASH_URL`**). The webhook publisher forwards the admin secret via QStash’s **`Upstash-Forward-x-internal-api-secret`** header so deliveries to `<public-origin>/api/jobs/process-event` pass internal auth (`lib/queue/qstash.ts`).
+   - **Manual connectivity test (no Xero):** `POST https://<your-host>/api/admin/test-qstash-enqueue` with header **`x-internal-api-secret`** and JSON **`{}`**. Expect **`200`** and a **`messageId`**; Upstash should show a delivery to **`/api/admin/qstash-smoke`**. To hit the real worker with a known row, send **`{ "target": "process-event", "webhookEventId": "<uuid>" }`** (id must exist in **`webhook_events`**).
+   - **PowerShell (no curl):** set host and secret, then:
+
+     ```powershell
+     $base = "https://<your-host>"
+     $secret = "<INTERNAL_ADMIN_SECRET>"
+     $headers = @{ "x-internal-api-secret" = $secret }
+     Invoke-RestMethod -Method Post -Uri "$base/api/admin/test-qstash-enqueue" `
+       -Headers $headers -ContentType "application/json" -Body "{}"
+     ```
+
+     Real worker example:
+
+     ```powershell
+     Invoke-RestMethod -Method Post -Uri "$base/api/admin/test-qstash-enqueue" `
+       -Headers $headers -ContentType "application/json" `
+       -Body '{"target":"process-event","webhookEventId":"<uuid-from-webhook_events>"}'
+     ```
+   - **Verbose `[pipeline]` logs (no redeploy):** after migrations create **`app_runtime_settings`**, use **`GET`** / **`PATCH /api/admin/runtime-settings`** with header **`x-internal-api-secret`**. `PATCH` body: **`{"pipelineDebug": true}`** (or **`false`**). Responses include **`envOverride: true`** when **`PIPELINE_DEBUG=1`** is set in Vercel (env wins over DB for *enabling* logs). Cache TTL is short; toggles take effect within ~15s without restart.
+
+     ```powershell
+     Invoke-RestMethod -Method Patch -Uri "$base/api/admin/runtime-settings" `
+       -Headers $headers -ContentType "application/json" `
+       -Body '{"pipelineDebug":true}'
+     ```
 8. **Notifications**: Configure Teams and/or Resend; run a controlled test after the first successful process-event.
 
 ---
