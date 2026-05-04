@@ -14,7 +14,7 @@ vi.mock("@/lib/xero/refresh", () => ({
 }));
 
 vi.mock("@/lib/xero/accounts", () => ({
-  fetchBankAccountSnapshot: vi.fn()
+  fetchContactBankLineSnapshot: vi.fn()
 }));
 
 vi.mock("@/lib/db/account-snapshots", () => ({

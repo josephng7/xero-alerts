@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { validateAdminInternalRouteAuth } from "@/lib/auth/internal-route-auth";
 import { saveAccountSnapshot } from "@/lib/db/account-snapshots";
 import { getEnv } from "@/lib/env";
-import { fetchBankAccountSnapshot } from "@/lib/xero/accounts";
+import { fetchContactBankLineSnapshot } from "@/lib/xero/accounts";
 import { getTenantAccessToken } from "@/lib/xero/refresh";
 import { z } from "zod";
 
@@ -53,11 +53,11 @@ export async function POST(request: Request) {
       xeroClientId: env.XERO_CLIENT_ID,
       xeroClientSecret: env.XERO_CLIENT_SECRET
     });
-    const accounts = await fetchBankAccountSnapshot(token.accessToken);
+    const lines = await fetchContactBankLineSnapshot(token.accessToken);
     const persisted = await saveAccountSnapshot({
       tenantId: body.tenantId,
       source: "xero_full_sync",
-      accounts
+      contactBankLines: lines
     });
 
     return NextResponse.json(
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         tenantId: body.tenantId,
         tokenSource: token.source,
         tokenVersion: token.tokenVersion,
-        accountsSynced: persisted.accountCount,
+        contactBankLinesSynced: persisted.lineCount,
         fetchedAt: persisted.fetchedAt
       },
       { status: 200 }

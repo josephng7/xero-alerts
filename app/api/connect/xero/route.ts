@@ -19,7 +19,8 @@ export async function GET() {
   const authorizeUrl = buildXeroAuthorizeUrl({
     clientId: env.XERO_CLIENT_ID,
     redirectUri,
-    state
+    state,
+    scope: env.XERO_OAUTH_SCOPES
   });
 
   const cookieStore = await cookies();

@@ -4,6 +4,10 @@ const XERO_AUTHORIZE_URL = "https://login.xero.com/identity/connect/authorize";
 const XERO_TOKEN_URL = "https://identity.xero.com/connect/token";
 const XERO_CONNECTIONS_URL = "https://api.xero.com/connections";
 
+/** Read-only Contacts access + refresh. Must match scopes enabled for this Xero app. */
+export const XERO_OAUTH_DEFAULT_SCOPES =
+  "openid profile email accounting.contacts.read offline_access";
+
 export type XeroTokenResponse = {
   access_token: string;
   refresh_token: string;
@@ -45,7 +49,7 @@ export function buildXeroAuthorizeUrl(params: {
     response_type: "code",
     client_id: params.clientId,
     redirect_uri: params.redirectUri,
-    scope: params.scope ?? "openid profile email accounting.transactions offline_access",
+    scope: params.scope ?? XERO_OAUTH_DEFAULT_SCOPES,
     state: params.state
   });
   return `${XERO_AUTHORIZE_URL}?${searchParams.toString()}`;

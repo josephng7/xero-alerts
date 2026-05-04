@@ -3,6 +3,8 @@ import { desc } from "drizzle-orm";
 import { accountSnapshots, getDb, webhookEvents } from "@/lib/db/index";
 
 type SnapshotPayload = {
+  contactBankLines?: unknown;
+  /** Legacy chart-of-accounts payload */
   accounts?: unknown;
 };
 
@@ -13,7 +15,7 @@ type WebhookPayload = {
 export type UiSnapshotSummary = {
   fetchedAt: string;
   source: string;
-  accountCount: number;
+  lineCount: number;
 } | null;
 
 export type UiWebhookEventRow = {
@@ -29,9 +31,15 @@ export type UiDashboardBaseline = {
   webhookEvents: UiWebhookEventRow[];
 };
 
-export function extractAccountCount(payload: unknown): number {
+export function extractSnapshotLineCount(payload: unknown): number {
   const data = payload as SnapshotPayload;
-  return Array.isArray(data?.accounts) ? data.accounts.length : 0;
+  if (Array.isArray(data?.contactBankLines)) {
+    return data.contactBankLines.length;
+  }
+  if (Array.isArray(data?.accounts)) {
+    return data.accounts.length;
+  }
+  return 0;
 }
 
 export function deriveEventStatus(payload: unknown, eventCategory: string | null) {
@@ -71,7 +79,7 @@ export async function getUiDashboardBaseline(): Promise<UiDashboardBaseline> {
         ? {
             fetchedAt: latestSnapshot.fetchedAt.toISOString(),
             source: latestSnapshot.source,
-            accountCount: extractAccountCount(latestSnapshot.payload)
+            lineCount: extractSnapshotLineCount(latestSnapshot.payload)
           }
         : null,
       latestWebhookReceivedAt: recentWebhookEvents[0]?.receivedAt.toISOString() ?? null,

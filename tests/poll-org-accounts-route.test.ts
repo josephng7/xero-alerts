@@ -7,13 +7,13 @@ const {
   getSnapshotStalenessMock,
   saveAccountSnapshotMock,
   getTenantAccessTokenMock,
-  fetchBankAccountSnapshotMock
+  fetchContactBankLineSnapshotMock
 } = vi.hoisted(() => ({
   getEnvMock: vi.fn(),
   getSnapshotStalenessMock: vi.fn(),
   saveAccountSnapshotMock: vi.fn(),
   getTenantAccessTokenMock: vi.fn(),
-  fetchBankAccountSnapshotMock: vi.fn()
+  fetchContactBankLineSnapshotMock: vi.fn()
 }));
 
 vi.mock("@/lib/env", () => ({
@@ -30,7 +30,7 @@ vi.mock("@/lib/xero/refresh", () => ({
 }));
 
 vi.mock("@/lib/xero/accounts", () => ({
-  fetchBankAccountSnapshot: fetchBankAccountSnapshotMock
+  fetchContactBankLineSnapshot: fetchContactBankLineSnapshotMock
 }));
 
 import { POST } from "@/app/api/cron/poll-org-accounts/route";
@@ -147,21 +147,20 @@ describe("POST /api/cron/poll-org-accounts", () => {
       source: "refreshed",
       tokenVersion: 3
     });
-    fetchBankAccountSnapshotMock.mockResolvedValue([
+    fetchContactBankLineSnapshotMock.mockResolvedValue([
       {
-        accountId: "acc-1",
-        code: "090",
-        name: "Operating",
-        type: "BANK",
-        status: "ACTIVE",
-        bankAccountNumber: null,
-        currencyCode: "USD",
-        updatedDateUtc: null
+        lineKey: "k1",
+        contactId: "c-1",
+        contactName: "Acme",
+        bankAccountName: "Main",
+        bsb: null,
+        accountNumber: null,
+        normalizedBankRef: null
       }
     ]);
     saveAccountSnapshotMock.mockResolvedValue({
       organizationId: "org-1",
-      accountCount: 1,
+      lineCount: 1,
       fetchedAt: "2026-05-02T00:10:00.000Z"
     });
 
@@ -169,7 +168,7 @@ describe("POST /api/cron/poll-org-accounts", () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.accountCount).toBe(1);
+    expect(json.lineCount).toBe(1);
     expect(json.fetchedAt).toBe("2026-05-02T00:10:00.000Z");
     expect(json.sourceUsed).toEqual({
       snapshot: "xero_poll",
@@ -186,7 +185,7 @@ describe("POST /api/cron/poll-org-accounts", () => {
     expect(saveAccountSnapshotMock).toHaveBeenCalledWith({
       tenantId: "tenant-1",
       source: "xero_poll",
-      accounts: expect.any(Array)
+      contactBankLines: expect.any(Array)
     });
   });
 });

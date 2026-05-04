@@ -29,7 +29,9 @@ function buildAlertTitle(summary: NotificationDiff["summary"]): string {
   if (summary.changedCount > 0) {
     parts.push(`~${summary.changedCount}`);
   }
-  return parts.length > 0 ? `Bank accounts changed (${parts.join(", ")})` : "Bank accounts changed";
+  return parts.length > 0
+    ? `Contact bank details changed (${parts.join(", ")})`
+    : "Contact bank details changed";
 }
 
 /**

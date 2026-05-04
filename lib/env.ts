@@ -8,6 +8,8 @@ const envSchema = z.object({
   XERO_CLIENT_SECRET: z.string().min(1).optional(),
   XERO_WEBHOOK_KEY: z.string().min(1).optional(),
   XERO_ALLOWED_TENANT_ID: z.string().min(1).optional(),
+  /** Space-separated OAuth scopes; must match Xero Developer app configuration. */
+  XERO_OAUTH_SCOPES: z.string().min(1).optional(),
   TOKEN_ENCRYPTION_KEY: z.string().min(1).optional(),
   INTERNAL_CRON_SECRET: z.string().min(1).optional(),
   INTERNAL_CRON_SECRET_PREVIOUS: z.string().min(1).optional(),

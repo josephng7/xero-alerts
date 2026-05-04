@@ -67,9 +67,9 @@ function parseUrlSafe(urlString: string): URL | null {
 }
 
 /** Host must match exactly; avoid substring checks (CodeQL js/incomplete-url-substring-sanitization). */
-function isXeroAccountsApiUrl(urlString: string): boolean {
+function isXeroContactsListUrl(urlString: string): boolean {
   const u = parseUrlSafe(urlString);
-  return u?.hostname === "api.xero.com";
+  return u?.hostname === "api.xero.com" && u.pathname.includes("/Contacts");
 }
 
 /** Restrict QStash mock to expected host + publish API path. */
@@ -110,7 +110,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
       }
     });
     hoisted.getLatestAccountSnapshotByTenantMock.mockResolvedValue({
-      accounts: []
+      contactBankLines: []
     });
     hoisted.getTenantAccessTokenMock.mockResolvedValue({
       accessToken: "xero-access-token",
@@ -118,7 +118,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
     });
     hoisted.saveAccountSnapshotMock.mockResolvedValue({
       organizationId: "org-wf-1",
-      accountCount: 1,
+      lineCount: 1,
       fetchedAt: "2026-05-02T12:00:00.000Z"
     });
     hoisted.runNotifyJobMock.mockResolvedValue({
@@ -141,24 +141,27 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = getRequestUrl(input);
 
-        if (isXeroAccountsApiUrl(url)) {
+        if (isXeroContactsListUrl(url)) {
           const headers = new Headers(init?.headers ?? undefined);
           expect(headers.get("Authorization")).toBe("Bearer xero-access-token");
           expect(headers.get("Accept")).toBe("application/json");
           return new Response(
             JSON.stringify({
-              Accounts: [
+              Contacts: [
                 {
-                  AccountID: "acc-from-fetch-1",
-                  Code: "090",
-                  Name: "Operating",
-                  Type: "BANK",
-                  Status: "ACTIVE",
-                  BankAccountNumber: null,
-                  CurrencyCode: "USD",
-                  UpdatedDateUTC: null
+                  ContactID: "contact-wf-1",
+                  Name: "Supplier",
+                  BankAccounts: [
+                    {
+                      BankAccountID: "acc-from-fetch-1",
+                      AccountName: "Main",
+                      BSB: "123456",
+                      AccountNumber: "999888"
+                    }
+                  ]
                 }
-              ]
+              ],
+              Pagination: { Page: 1, PageSize: 100, PageCount: 1 }
             }),
             { status: 200, headers: { "Content-Type": "application/json" } }
           );
@@ -189,7 +192,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
     vi.unstubAllGlobals();
   });
 
-  it("uses mocked HTTP for QStash and Xero Accounts through to snapshot save", async () => {
+  it("uses mocked HTTP for QStash and Xero Contacts (bank lines) through to snapshot save", async () => {
     const webhookResponse = await webhookPost(
       new Request("http://localhost/api/webhooks/xero", {
         method: "POST",
@@ -234,25 +237,25 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
     const processJson = await processResponse.json();
     expect(processJson.message).toBe("Webhook event processed");
     expect(processJson.tenantId).toBe("tenant-wf-1");
-    expect(processJson.diff.added).toEqual(["acc-from-fetch-1"]);
+    expect(processJson.diff.added).toEqual(["contact-wf-1:acc-from-fetch-1"]);
     expect(processJson.alert).toEqual({
       created: true,
       alertId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
     });
 
     const xeroCalls = fetchMock.mock.calls.filter((c) =>
-      isXeroAccountsApiUrl(getRequestUrl(c[0] as RequestInfo))
+      isXeroContactsListUrl(getRequestUrl(c[0] as RequestInfo))
     );
     expect(xeroCalls.length).toBeGreaterThan(0);
 
     expect(hoisted.saveAccountSnapshotMock).toHaveBeenCalledWith({
       tenantId: "tenant-wf-1",
       source: "webhook_process_event",
-      accounts: [
+      contactBankLines: [
         expect.objectContaining({
-          accountId: "acc-from-fetch-1",
-          name: "Operating",
-          type: "BANK"
+          lineKey: "contact-wf-1:acc-from-fetch-1",
+          contactName: "Supplier",
+          bankAccountName: "Main"
         })
       ]
     });

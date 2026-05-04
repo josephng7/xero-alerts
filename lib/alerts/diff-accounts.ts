@@ -1,57 +1,56 @@
 import { normalizeBankDetails } from "@/lib/normalize-bank";
-import type { XeroBankAccountSnapshot } from "@/lib/xero/accounts";
+import type { XeroContactBankLineSnapshot } from "@/lib/xero/accounts";
 
-type AccountDigest = {
-  accountId: string;
-  name: string;
-  status: string | null;
-  code: string | null;
+type LineDigest = {
+  contactName: string;
+  bankAccountName: string | null;
+  bsb: string | null;
+  accountNumber: string | null;
   normalizedBankRef: string | null;
 };
 
-function digest(account: XeroBankAccountSnapshot): AccountDigest {
+function digest(line: XeroContactBankLineSnapshot): LineDigest {
   return {
-    accountId: account.accountId,
-    name: account.name,
-    status: account.status,
-    code: account.code,
-    normalizedBankRef: account.bankAccountNumber
-      ? normalizeBankDetails(account.bankAccountNumber)
-      : null
+    contactName: line.contactName,
+    bankAccountName: line.bankAccountName,
+    bsb: line.bsb,
+    accountNumber: line.accountNumber,
+    normalizedBankRef: line.normalizedBankRef
   };
 }
 
 export function diffBankAccountSnapshots(params: {
-  previous: XeroBankAccountSnapshot[];
-  current: XeroBankAccountSnapshot[];
+  previous: XeroContactBankLineSnapshot[];
+  current: XeroContactBankLineSnapshot[];
 }) {
-  const previousMap = new Map(params.previous.map((a) => [a.accountId, digest(a)]));
-  const currentMap = new Map(params.current.map((a) => [a.accountId, digest(a)]));
+  const previousMap = new Map(params.previous.map((l) => [l.lineKey, digest(l)]));
+  const currentMap = new Map(params.current.map((l) => [l.lineKey, digest(l)]));
 
   const added: string[] = [];
   const removed: string[] = [];
   const changed: string[] = [];
 
-  for (const [accountId, current] of currentMap) {
-    const prev = previousMap.get(accountId);
+  for (const [lineKey, current] of currentMap) {
+    const prev = previousMap.get(lineKey);
     if (!prev) {
-      added.push(accountId);
+      added.push(lineKey);
       continue;
     }
 
     if (
-      prev.name !== current.name ||
-      prev.status !== current.status ||
-      prev.code !== current.code ||
+      prev.contactName !== current.contactName ||
+      prev.bankAccountName !== current.bankAccountName ||
+      prev.bsb !== current.bsb ||
+      prev.accountNumber !== current.accountNumber ||
       prev.normalizedBankRef !== current.normalizedBankRef
     ) {
-      changed.push(accountId);
+      changed.push(lineKey);
     }
   }
 
-  for (const accountId of previousMap.keys()) {
-    if (!currentMap.has(accountId)) {
-      removed.push(accountId);
+  for (const lineKey of previousMap.keys()) {
+    if (!currentMap.has(lineKey)) {
+      removed.push(lineKey);
     }
   }
 

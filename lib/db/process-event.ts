@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { accountSnapshots, getDb, organizations, webhookEvents } from "@/lib/db/index";
-import type { XeroBankAccountSnapshot } from "@/lib/xero/accounts";
+import type { XeroContactBankLineSnapshot } from "@/lib/xero/accounts";
 
 export async function getWebhookEventForProcessing(params: {
   webhookEventId?: string;
@@ -44,9 +44,15 @@ export async function getLatestAccountSnapshotByTenant(tenantId: string) {
     return null;
   }
 
-  const payload = snapshot.payload as { accounts?: XeroBankAccountSnapshot[] };
+  const payload = snapshot.payload as {
+    schemaVersion?: number;
+    contactBankLines?: XeroContactBankLineSnapshot[];
+    /** Legacy chart-of-accounts bank rows (pre–contact-bank pivot). Not used for new diffs. */
+    accounts?: unknown[];
+  };
+  const lines = Array.isArray(payload.contactBankLines) ? payload.contactBankLines : [];
   return {
     ...snapshot,
-    accounts: Array.isArray(payload.accounts) ? payload.accounts : []
+    contactBankLines: lines
   };
 }

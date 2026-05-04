@@ -5,7 +5,7 @@ const hoisted = vi.hoisted(() => ({
   getWebhookEventForProcessingMock: vi.fn(),
   getLatestAccountSnapshotByTenantMock: vi.fn(),
   getTenantAccessTokenMock: vi.fn(),
-  fetchBankAccountSnapshotMock: vi.fn(),
+  fetchContactBankLineSnapshotMock: vi.fn(),
   saveAccountSnapshotMock: vi.fn(),
   createAlertFromProcessEventDiffMock: vi.fn(),
   runNotifyJobMock: vi.fn()
@@ -25,7 +25,7 @@ vi.mock("@/lib/xero/refresh", () => ({
 }));
 
 vi.mock("@/lib/xero/accounts", () => ({
-  fetchBankAccountSnapshot: hoisted.fetchBankAccountSnapshotMock
+  fetchContactBankLineSnapshot: hoisted.fetchContactBankLineSnapshotMock
 }));
 
 vi.mock("@/lib/db/account-snapshots", () => ({
@@ -149,27 +149,26 @@ describe("POST /api/jobs/process-event", () => {
       }
     });
     hoisted.getLatestAccountSnapshotByTenantMock.mockResolvedValue({
-      accounts: []
+      contactBankLines: []
     });
     hoisted.getTenantAccessTokenMock.mockResolvedValue({
       accessToken: "token-1",
       source: "refreshed"
     });
-    hoisted.fetchBankAccountSnapshotMock.mockResolvedValue([
+    hoisted.fetchContactBankLineSnapshotMock.mockResolvedValue([
       {
-        accountId: "acc-1",
-        code: "090",
-        name: "Operating",
-        type: "BANK",
-        status: "ACTIVE",
-        bankAccountNumber: null,
-        currencyCode: "USD",
-        updatedDateUtc: null
+        lineKey: "acc-1",
+        contactId: "c-1",
+        contactName: "Acme",
+        bankAccountName: "Main",
+        bsb: null,
+        accountNumber: null,
+        normalizedBankRef: null
       }
     ]);
     hoisted.saveAccountSnapshotMock.mockResolvedValue({
       organizationId: "org-1",
-      accountCount: 1,
+      lineCount: 1,
       fetchedAt: "2026-05-02T00:10:00.000Z"
     });
     hoisted.createAlertFromProcessEventDiffMock.mockResolvedValue({
@@ -209,7 +208,7 @@ describe("POST /api/jobs/process-event", () => {
     expect(json.tokenSource).toBe("refreshed");
     expect(json.snapshot).toEqual({
       organizationId: "org-1",
-      accountCount: 1,
+      lineCount: 1,
       fetchedAt: "2026-05-02T00:10:00.000Z"
     });
     expect(json.diff).toEqual({
@@ -233,7 +232,7 @@ describe("POST /api/jobs/process-event", () => {
     expect(hoisted.saveAccountSnapshotMock).toHaveBeenCalledWith({
       tenantId: "tenant-1",
       source: "webhook_process_event",
-      accounts: expect.any(Array)
+      contactBankLines: expect.any(Array)
     });
     expect(hoisted.runNotifyJobMock).toHaveBeenCalledTimes(1);
   });

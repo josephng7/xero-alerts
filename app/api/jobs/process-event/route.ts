@@ -7,7 +7,7 @@ import { createAlertFromProcessEventDiff } from "@/lib/db/alerts";
 import { getWebhookEventForProcessing, getLatestAccountSnapshotByTenant } from "@/lib/db/process-event";
 import { getEnv } from "@/lib/env";
 import { runNotifyJob } from "@/lib/jobs/notify";
-import { fetchBankAccountSnapshot } from "@/lib/xero/accounts";
+import { fetchContactBankLineSnapshot } from "@/lib/xero/accounts";
 import { getTenantAccessToken } from "@/lib/xero/refresh";
 import { z } from "zod";
 
@@ -83,16 +83,16 @@ export async function POST(request: Request) {
       xeroClientId: env.XERO_CLIENT_ID,
       xeroClientSecret: env.XERO_CLIENT_SECRET
     });
-    const currentAccounts = await fetchBankAccountSnapshot(token.accessToken);
+    const currentLines = await fetchContactBankLineSnapshot(token.accessToken);
     const diff = diffBankAccountSnapshots({
-      previous: previousSnapshot?.accounts ?? [],
-      current: currentAccounts
+      previous: previousSnapshot?.contactBankLines ?? [],
+      current: currentLines
     });
 
     const persisted = await saveAccountSnapshot({
       tenantId,
       source: "webhook_process_event",
-      accounts: currentAccounts
+      contactBankLines: currentLines
     });
     const alert = await createAlertFromProcessEventDiff({
       tenantId,
