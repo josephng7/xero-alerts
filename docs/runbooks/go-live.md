@@ -171,6 +171,23 @@ See `docs/runbooks/internal-api-secret-rotation.md`.
    Use the same **`XERO_WEBHOOK_KEY`** as in the portal for signature verification.
 7. **QStash**: If using queue mode, set **`QSTASH_TOKEN`** and **`INTERNAL_ADMIN_SECRET`** (and optionally **`QSTASH_URL`**). The webhook publisher forwards the admin secret via QStash’s **`Upstash-Forward-x-internal-api-secret`** header so deliveries to `<public-origin>/api/jobs/process-event` pass internal auth (`lib/queue/qstash.ts`).
    - **Manual connectivity test (no Xero):** `POST https://<your-host>/api/admin/test-qstash-enqueue` with header **`x-internal-api-secret`** and JSON **`{}`**. Expect **`200`** and a **`messageId`**; Upstash should show a delivery to **`/api/admin/qstash-smoke`**. To hit the real worker with a known row, send **`{ "target": "process-event", "webhookEventId": "<uuid>" }`** (id must exist in **`webhook_events`**).
+   - **PowerShell (no curl):** set host and secret, then:
+
+     ```powershell
+     $base = "https://<your-host>"
+     $secret = "<INTERNAL_ADMIN_SECRET>"
+     $headers = @{ "x-internal-api-secret" = $secret }
+     Invoke-RestMethod -Method Post -Uri "$base/api/admin/test-qstash-enqueue" `
+       -Headers $headers -ContentType "application/json" -Body "{}"
+     ```
+
+     Real worker example:
+
+     ```powershell
+     Invoke-RestMethod -Method Post -Uri "$base/api/admin/test-qstash-enqueue" `
+       -Headers $headers -ContentType "application/json" `
+       -Body '{"target":"process-event","webhookEventId":"<uuid-from-webhook_events>"}'
+     ```
    - **Verbose logs:** set **`PIPELINE_DEBUG=1`** temporarily to emit **`[pipeline]`** lines in Vercel function logs (`lib/server/pipeline-debug.ts`).
 8. **Notifications**: Configure Teams and/or Resend; run a controlled test after the first successful process-event.
 
