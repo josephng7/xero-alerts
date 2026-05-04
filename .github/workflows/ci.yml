@@ -66,3 +66,11 @@ jobs:
 
       - name: Build
         run: pnpm run --if-present build
+
+      - name: Install Playwright (Chromium)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end smoke tests
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm run test:e2e

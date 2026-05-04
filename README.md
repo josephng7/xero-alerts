@@ -30,6 +30,11 @@ The app now includes a minimal Next.js + TypeScript baseline.
 - `pnpm run build`
 - `pnpm run verify`
 
+End-to-end smoke (production server on port 3100; requires a prior `pnpm run build`):
+
+1. One-time browser download: `pnpm exec playwright install chromium`
+2. `pnpm run test:e2e`
+
 ## Current API Behavior
 
 Implemented worker and ops endpoints:
