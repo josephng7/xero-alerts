@@ -43,7 +43,7 @@ Use this checklist when deploying the app to a new environment or cutting over p
 | `DATABASE_URL`           | **Required** — persists webhook events.                                                      |
 | `QSTASH_TOKEN`           | Optional. If unset, the event is stored but **not** queued (response still 202).             |
 | `INTERNAL_ADMIN_SECRET`  | **Required when `QSTASH_TOKEN` is set** — publish uses `Upstash-Forward-x-internal-api-secret` so QStash deliveries authenticate to `process-event`. |
-| `QSTASH_URL`             | Optional. Defaults to `https://qstash.upstash.io` when `QSTASH_TOKEN` is set (`lib/queue/qstash`). |
+| `QSTASH_URL`             | Optional. Defaults to `https://qstash.upstash.io` when `QSTASH_TOKEN` is set (`lib/queue/qstash`). Must be the **API origin only** (for example `https://qstash-us-east-1.upstash.io`). Do **not** append `/v2/publish/`; that breaks publish and Upstash returns `invalid destination url: endpoint has invalid scheme`. The app normalizes to `origin` at publish time, but fixing the env value avoids confusion. |
 
 ### Worker (`POST /api/jobs/process-event`)
 
