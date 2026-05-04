@@ -95,6 +95,43 @@ describe("POST /api/admin/test-qstash-enqueue", () => {
     expect(response.status).toBe(400);
   });
 
+  it("returns 400 when idempotencyKey exceeds 128 chars (process-event worker limit)", async () => {
+    const longKey = "k".repeat(129);
+    const response = await POST(
+      new Request("http://localhost/api/admin/test-qstash-enqueue", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-api-secret": internalSecret
+        },
+        body: JSON.stringify({ target: "process-event", idempotencyKey: longKey })
+      })
+    );
+    expect(response.status).toBe(400);
+    expect(hoisted.publishQstashJobMock).not.toHaveBeenCalled();
+  });
+
+  it("publishes process-event target when idempotencyKey is within 128 chars", async () => {
+    const key = "k".repeat(128);
+    const response = await POST(
+      new Request("http://localhost/api/admin/test-qstash-enqueue", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-api-secret": internalSecret
+        },
+        body: JSON.stringify({ target: "process-event", idempotencyKey: key })
+      })
+    );
+    expect(response.status).toBe(200);
+    expect(hoisted.publishQstashJobMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        destinationUrl: "https://app.example.test/api/jobs/process-event",
+        payload: { idempotencyKey: key }
+      })
+    );
+  });
+
   it("publishes process-event target when webhookEventId is set", async () => {
     const response = await POST(
       new Request("http://localhost/api/admin/test-qstash-enqueue", {

@@ -7,11 +7,12 @@ import { DEFAULT_QSTASH_URL, publishQstashJob } from "@/lib/queue/qstash";
 import { getAppBaseUrl } from "@/lib/server/app-base-url";
 import { pipelineDebug } from "@/lib/server/pipeline-debug";
 
+/** Same string bounds as `POST /api/jobs/process-event` so QStash deliveries are not rejected after publish. */
 const testEnqueueBodySchema = z
   .object({
     target: z.enum(["smoke", "process-event"]).optional(),
     webhookEventId: z.string().trim().min(1).max(128).optional(),
-    idempotencyKey: z.string().trim().min(1).max(2048).optional()
+    idempotencyKey: z.string().trim().min(1).max(128).optional()
   })
   .strict()
   .superRefine((val, ctx) => {
