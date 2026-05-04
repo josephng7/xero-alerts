@@ -267,6 +267,11 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - **Scope:** `add-e2e-playwright-smoke`; CI Chromium + `pnpm run test:e2e` after build; README install note.
 - **Verification:** `pnpm run verify`; `pnpm run build` + `pnpm run test:e2e`.
 
+### 2026-05-04_20:00 +08:00 — QStash pipeline debug + admin smoke enqueue
+
+- **Scope:** OpenSpec `add-pipeline-qstash-observability`; `PIPELINE_DEBUG=1` gated `[pipeline]` logs (`lib/server/pipeline-debug.ts`); webhook + `process-event` instrumentation; refactor `publishQstashJob` in `lib/queue/qstash.ts`; admin routes `POST /api/admin/test-qstash-enqueue` and `POST /api/admin/qstash-smoke`; Vitest `tests/admin-test-qstash-enqueue-route.test.ts`; README + `go-live.md` + `.env.example`.
+- **Verification:** `pnpm run verify` (branch `feat/qstash-pipeline-debug`).
+
 ## Logging Rules
 
 For each future work block, append:

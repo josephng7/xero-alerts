@@ -6,6 +6,7 @@ import { saveAccountSnapshot } from "@/lib/db/account-snapshots";
 import { createAlertFromProcessEventDiff } from "@/lib/db/alerts";
 import { getWebhookEventForProcessing, getLatestAccountSnapshotByTenant } from "@/lib/db/process-event";
 import { getEnv } from "@/lib/env";
+import { pipelineDebug } from "@/lib/server/pipeline-debug";
 import { runNotifyJob } from "@/lib/jobs/notify";
 import { fetchContactBankLineSnapshot } from "@/lib/xero/accounts";
 import { getTenantAccessToken } from "@/lib/xero/refresh";
@@ -57,6 +58,11 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
   }
+
+  pipelineDebug("process_event_start", {
+    webhookEventId: body.webhookEventId,
+    idempotencyKeyPrefix: body.idempotencyKey?.slice(0, 12)
+  });
 
   const event = await getWebhookEventForProcessing({
     webhookEventId: body.webhookEventId,

@@ -1,0 +1,4 @@
+- [x] Refactor QStash publish into `publishQstashJob` + `enqueueProcessEventJob`
+- [x] Add `lib/server/pipeline-debug.ts` and wire `PIPELINE_DEBUG` logging
+- [x] Add `POST /api/admin/test-qstash-enqueue` and `POST /api/admin/qstash-smoke`
+- [x] Document in README, go-live, `.env.example`; Vitest for admin test route
