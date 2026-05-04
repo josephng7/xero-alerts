@@ -2,15 +2,9 @@ import Link from "next/link";
 
 import { getUiAlertsList } from "@/lib/ui/alerts-data";
 import { getUiDashboardBaseline } from "@/lib/ui/baseline";
+import { formatOpsDateTime } from "@/lib/ui/format-ops-datetime";
 
 export const dynamic = "force-dynamic";
-
-function formatIso(iso: string | null) {
-  if (!iso) {
-    return "N/A";
-  }
-  return new Date(iso).toLocaleString();
-}
 
 export default async function HomePage() {
   const [baseline, alertsList] = await Promise.all([getUiDashboardBaseline(), getUiAlertsList({ limit: 25 })]);
@@ -19,6 +13,9 @@ export default async function HomePage() {
     <main style={{ fontFamily: "sans-serif", padding: "2rem", maxWidth: 920 }}>
       <h1>Xero Alerts Dashboard</h1>
       <p style={{ marginTop: "0.5rem" }}>Alerts and processing summary from persisted data and admin APIs.</p>
+      <p style={{ marginTop: "0.35rem", fontSize: "0.9rem", color: "#555" }}>
+        Times below are shown in <code>Asia/Shanghai</code> with explicit UTC offset (+08:00) to match ops logbook entries.
+      </p>
 
       {alertsList.unavailable ? (
         <p style={{ marginTop: "1rem", color: "#666" }}>
@@ -52,7 +49,7 @@ export default async function HomePage() {
                   </td>
                   <td style={{ paddingTop: "0.5rem" }}>{alert.xeroTenantId}</td>
                   <td style={{ paddingTop: "0.5rem" }}>{alert.acknowledgedAt ? "Acknowledged" : "Open"}</td>
-                  <td style={{ paddingTop: "0.5rem" }}>{formatIso(alert.createdAt)}</td>
+                  <td style={{ paddingTop: "0.5rem" }}>{formatOpsDateTime(alert.createdAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -66,8 +63,8 @@ export default async function HomePage() {
       <section style={{ marginTop: "1.5rem" }}>
         <h2>Latest processing/snapshot summary</h2>
         <ul>
-          <li>Latest webhook received: {formatIso(baseline.latestWebhookReceivedAt)}</li>
-          <li>Latest snapshot fetched: {formatIso(baseline.snapshot?.fetchedAt ?? null)}</li>
+          <li>Latest webhook received: {formatOpsDateTime(baseline.latestWebhookReceivedAt)}</li>
+          <li>Latest snapshot fetched: {formatOpsDateTime(baseline.snapshot?.fetchedAt ?? null)}</li>
           <li>Latest snapshot source: {baseline.snapshot?.source ?? "N/A"}</li>
           <li>Latest snapshot contact bank line count: {baseline.snapshot?.lineCount ?? 0}</li>
         </ul>
@@ -93,7 +90,7 @@ export default async function HomePage() {
                   <td style={{ paddingTop: "0.5rem" }}>{event.id.slice(0, 8)}...</td>
                   <td style={{ paddingTop: "0.5rem" }}>{event.eventCategory ?? "N/A"}</td>
                   <td style={{ paddingTop: "0.5rem" }}>{event.status}</td>
-                  <td style={{ paddingTop: "0.5rem" }}>{formatIso(event.receivedAt)}</td>
+                  <td style={{ paddingTop: "0.5rem" }}>{formatOpsDateTime(event.receivedAt)}</td>
                 </tr>
               ))}
             </tbody>
