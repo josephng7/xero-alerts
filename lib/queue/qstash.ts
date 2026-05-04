@@ -16,6 +16,17 @@ export function normalizeQstashApiOrigin(input: string): string {
 }
 
 /**
+ * Full URL for `POST /v2/publish/<destination>`.
+ * The destination must appear as a **literal** `https://…` path segment (same as `@upstash/qstash` and Upstash curl examples).
+ * Using `encodeURIComponent` on the whole destination turns `://` into `%3A%2F%2F`, which breaks QStash parsing and yields
+ * `invalid destination url: endpoint has invalid scheme`.
+ */
+export function buildQstashPublishRequestUrl(qstashOrigin: string, destinationUrl: string): string {
+  const base = normalizeQstashApiOrigin(qstashOrigin);
+  return new URL(["v2", "publish", destinationUrl].join("/"), `${base}/`).toString();
+}
+
+/**
  * Publish a POST delivery to QStash for an absolute destination URL.
  * QStash will POST `payload` as JSON and forward `internalApiSecret` as `x-internal-api-secret`.
  */
@@ -34,7 +45,7 @@ export async function publishQstashJob(params: {
     destinationHost = "(invalid-destination-url)";
   }
 
-  const publishUrl = `${qstashOrigin}/v2/publish/${encodeURIComponent(params.destinationUrl)}`;
+  const publishUrl = buildQstashPublishRequestUrl(qstashOrigin, params.destinationUrl);
 
   await pipelineDebug("qstash_publish_start", {
     qstashApiHost: new URL(qstashOrigin).host,
