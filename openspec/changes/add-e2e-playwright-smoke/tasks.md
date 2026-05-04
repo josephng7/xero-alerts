@@ -1,0 +1,5 @@
+- [x] Add `@playwright/test` and `playwright.config.ts`
+- [x] Add `e2e/smoke.spec.ts` (dashboard + health)
+- [x] Wire CI (install browsers + run after build)
+- [x] Document `test:e2e` and browser install in README
+- [x] Update task tracker / logbook
