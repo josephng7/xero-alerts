@@ -2,17 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getUiAlertById } from "@/lib/ui/alerts-data";
+import { formatOpsDateTime } from "@/lib/ui/format-ops-datetime";
 
 import { AckForm } from "./ack-form";
 
 export const dynamic = "force-dynamic";
-
-function formatIso(iso: string | null) {
-  if (!iso) {
-    return "N/A";
-  }
-  return new Date(iso).toLocaleString();
-}
 
 export default async function AlertDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -48,8 +42,8 @@ export default async function AlertDetailPage({ params }: { params: Promise<{ id
         Tenant <code>{alert.xeroTenantId}</code> · Source <code>{alert.source}</code>
       </p>
       <ul style={{ marginTop: "1rem" }}>
-        <li>Created: {formatIso(alert.createdAt)}</li>
-        <li>Status: {alert.acknowledgedAt ? `Acknowledged at ${formatIso(alert.acknowledgedAt)}` : "Open"}</li>
+        <li>Created: {formatOpsDateTime(alert.createdAt)}</li>
+        <li>Status: {alert.acknowledgedAt ? `Acknowledged at ${formatOpsDateTime(alert.acknowledgedAt)}` : "Open"}</li>
         {alert.webhookEventId ? (
           <li>
             Webhook event: <code>{alert.webhookEventId}</code>
