@@ -24,12 +24,14 @@ describe("parseEnv", () => {
       QSTASH_URL: "",
       TEAMS_WEBHOOK_URL: "",
       ALERTS_FROM_EMAIL: "",
-      SENTRY_DSN: ""
+      SENTRY_DSN: "",
+      XERO_OAUTH_SCOPES: ""
     });
 
     expect(parsed.XERO_ALLOWED_TENANT_ID).toBeUndefined();
     expect(parsed.INTERNAL_CRON_SECRET).toBeUndefined();
     expect(parsed.KV_REST_API_URL).toBeUndefined();
     expect(parsed.QSTASH_URL).toBeUndefined();
+    expect(parsed.XERO_OAUTH_SCOPES).toBeUndefined();
   });
 });

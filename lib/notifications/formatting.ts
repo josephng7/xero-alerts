@@ -14,7 +14,7 @@ export function buildNotificationSubject(
 export function formatTeamsMessage(payload: NotificationPayload): string {
   const { tenantId, idempotencyKey, diff } = payload;
   const lines = [
-    `Xero account changes detected for tenant ${tenantId}.`,
+    `Xero contact bank detail changes detected for tenant ${tenantId}.`,
     formatCountLine("Added", diff.summary.addedCount),
     formatCountLine("Removed", diff.summary.removedCount),
     formatCountLine("Changed", diff.summary.changedCount)
@@ -32,7 +32,7 @@ export function formatEmailHtmlMessage(payload: NotificationPayload): string {
   const keyLine = idempotencyKey ? `<p><strong>Event key:</strong> ${idempotencyKey}</p>` : "";
 
   return [
-    "<h2>Xero account changes detected</h2>",
+    "<h2>Xero contact bank detail changes detected</h2>",
     `<p><strong>Tenant:</strong> ${tenantId}</p>`,
     "<ul>",
     `<li>Added: ${diff.summary.addedCount}</li>`,

@@ -53,7 +53,7 @@ describe("alerts API routes", () => {
             source: "process_event_diff",
             webhookEventId: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
             idempotencyKey: "idem",
-            title: "Bank accounts changed (+1)",
+            title: "Contact bank details changed (+1)",
             diff: {
               added: [],
               removed: [],

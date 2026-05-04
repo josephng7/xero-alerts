@@ -1,36 +1,94 @@
-export type XeroBankAccountSnapshot = {
-  accountId: string;
-  code: string | null;
-  name: string;
-  type: string | null;
-  status: string | null;
-  bankAccountNumber: string | null;
-  currencyCode: string | null;
-  updatedDateUtc: string | null;
+import { normalizeBankDetails } from "@/lib/normalize-bank";
+
+const CONTACTS_URL = "https://api.xero.com/api.xro/2.0/Contacts";
+
+/**
+ * One contact bank detail line (Xero **Contact** → `BankAccounts[]`, not org chart `Accounts`).
+ * Used for read-only `GET /Contacts` polling and diffs.
+ */
+export type XeroContactBankLineSnapshot = {
+  lineKey: string;
+  contactId: string;
+  contactName: string;
+  bankAccountName: string | null;
+  bsb: string | null;
+  accountNumber: string | null;
+  normalizedBankRef: string | null;
 };
 
-function mapBankAccounts(payload: unknown): XeroBankAccountSnapshot[] {
-  const rows = Array.isArray((payload as { Accounts?: unknown[] })?.Accounts)
-    ? (payload as { Accounts: unknown[] }).Accounts
-    : [];
-
-  return rows
-    .map((item) => item as Record<string, unknown>)
-    .filter((item) => item.AccountID && item.Name && item.Type === "BANK")
-    .map((item) => ({
-      accountId: String(item.AccountID),
-      code: item.Code ? String(item.Code) : null,
-      name: String(item.Name),
-      type: item.Type ? String(item.Type) : null,
-      status: item.Status ? String(item.Status) : null,
-      bankAccountNumber: item.BankAccountNumber ? String(item.BankAccountNumber) : null,
-      currencyCode: item.CurrencyCode ? String(item.CurrencyCode) : null,
-      updatedDateUtc: item.UpdatedDateUTC ? String(item.UpdatedDateUTC) : null
-    }));
+function asRecord(v: unknown): Record<string, unknown> {
+  return v !== null && typeof v === "object" ? (v as Record<string, unknown>) : {};
 }
 
-export async function fetchBankAccountSnapshot(accessToken: string) {
-  const response = await fetch("https://api.xero.com/api.xro/2.0/Accounts", {
+function str(v: unknown): string | null {
+  if (v === null || v === undefined) {
+    return null;
+  }
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
+}
+
+/** Stable id for diff: prefer Xero’s bank account id when present, else composite. */
+function buildLineKey(
+  contactId: string,
+  bank: Record<string, unknown>,
+  fallbackIndex: number
+): string {
+  const guid = bank.BankAccountID ?? bank.BankAccountId;
+  if (guid !== undefined && guid !== null && String(guid).length > 0) {
+    return `${contactId}:${String(guid)}`;
+  }
+  const bsb = str(bank.BSB ?? bank.Bsb) ?? "";
+  const num = str(bank.AccountNumber ?? bank.accountNumber) ?? "";
+  const accName = str(bank.AccountName ?? bank.BankAccountName) ?? "";
+  if (bsb || num || accName) {
+    return `${contactId}|${bsb}|${num}|${accName}`;
+  }
+  return `${contactId}:bank:${fallbackIndex}`;
+}
+
+function mapBankLine(
+  contactId: string,
+  contactName: string,
+  bank: Record<string, unknown>,
+  index: number
+): XeroContactBankLineSnapshot {
+  const lineKey = buildLineKey(contactId, bank, index);
+  const bsb = str(bank.BSB ?? bank.Bsb);
+  const accountNumber = str(bank.AccountNumber ?? bank.accountNumber);
+  const bankAccountName = str(bank.AccountName ?? bank.BankAccountName);
+  const rawRef = [bsb, accountNumber].filter(Boolean).join("|") || accountNumber || bsb;
+  const normalizedBankRef = rawRef ? normalizeBankDetails(rawRef) : null;
+
+  return {
+    lineKey,
+    contactId,
+    contactName,
+    bankAccountName,
+    bsb,
+    accountNumber,
+    normalizedBankRef
+  };
+}
+
+type XeroContactsPagination = {
+  Page?: number;
+  PageSize?: number;
+  PageCount?: number;
+  pageCount?: number;
+};
+
+type ContactsPagePayload = {
+  Contacts?: unknown[];
+  contacts?: unknown[];
+  Pagination?: XeroContactsPagination;
+  pagination?: XeroContactsPagination;
+};
+
+async function fetchContactsPage(accessToken: string, page: number): Promise<ContactsPagePayload> {
+  const url = new URL(CONTACTS_URL);
+  url.searchParams.set("page", String(page));
+  const response = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/json"
@@ -39,13 +97,53 @@ export async function fetchBankAccountSnapshot(accessToken: string) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Xero account fetch failed (${response.status}): ${text}`);
+    throw new Error(`Xero contacts fetch failed (${response.status}): ${text}`);
   }
 
-  const payload = await response.json();
-  return mapBankAccounts(payload);
+  return (await response.json()) as ContactsPagePayload;
+}
+
+/**
+ * Read-only: paginates `GET /Contacts` and flattens each contact’s `BankAccounts` into snapshot lines.
+ * Requires scope `accounting.contacts.read` (or legacy `accounting.contacts`).
+ */
+export async function fetchContactBankLineSnapshot(
+  accessToken: string
+): Promise<XeroContactBankLineSnapshot[]> {
+  const lines: XeroContactBankLineSnapshot[] = [];
+  let page = 1;
+  let pageCount = 1;
+
+  do {
+    const payload = await fetchContactsPage(accessToken, page);
+    const pagination = payload.Pagination ?? payload.pagination;
+    const pages = pagination?.PageCount ?? pagination?.pageCount;
+    if (typeof pages === "number" && pages >= 1) {
+      pageCount = pages;
+    }
+
+    const contactsRaw = payload.Contacts ?? payload.contacts ?? [];
+    for (const raw of contactsRaw) {
+      const c = asRecord(raw);
+      const contactId = str(c.ContactID ?? c.ContactId);
+      if (!contactId) {
+        continue;
+      }
+      const contactName = str(c.Name) ?? "(unnamed contact)";
+      const banksRaw = c.BankAccounts ?? c.bankAccounts;
+      const banks = Array.isArray(banksRaw) ? banksRaw : [];
+      banks.forEach((bank, idx) => {
+        lines.push(mapBankLine(contactId, contactName, asRecord(bank), idx));
+      });
+    }
+
+    page += 1;
+  } while (page <= pageCount);
+
+  return lines;
 }
 
 export const __internal = {
-  mapBankAccounts
+  buildLineKey,
+  mapBankLine
 };

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { validateCronInternalRouteAuth } from "@/lib/auth/internal-route-auth";
 import { getSnapshotStaleness, saveAccountSnapshot } from "@/lib/db/account-snapshots";
 import { getEnv } from "@/lib/env";
-import { fetchBankAccountSnapshot } from "@/lib/xero/accounts";
+import { fetchContactBankLineSnapshot } from "@/lib/xero/accounts";
 import { getTenantAccessToken } from "@/lib/xero/refresh";
 
 const SNAPSHOT_SOURCE = "xero_poll";
@@ -52,18 +52,18 @@ export async function POST(request: Request) {
       xeroClientId: env.XERO_CLIENT_ID,
       xeroClientSecret: env.XERO_CLIENT_SECRET
     });
-    const accounts = await fetchBankAccountSnapshot(token.accessToken);
+    const lines = await fetchContactBankLineSnapshot(token.accessToken);
     const persisted = await saveAccountSnapshot({
       tenantId: body.tenantId,
       source: SNAPSHOT_SOURCE,
-      accounts
+      contactBankLines: lines
     });
 
     return NextResponse.json(
       {
-        message: "Org account poll completed",
+        message: "Contact bank snapshot poll completed",
         tenantId: body.tenantId,
-        accountCount: persisted.accountCount,
+        lineCount: persisted.lineCount,
         fetchedAt: persisted.fetchedAt,
         sourceUsed: {
           snapshot: SNAPSHOT_SOURCE,

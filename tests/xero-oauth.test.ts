@@ -19,7 +19,21 @@ describe("buildXeroAuthorizeUrl", () => {
       "http://localhost:3000/api/oauth/callback"
     );
     expect(parsed.searchParams.get("state")).toBe("state-123");
-    expect(parsed.searchParams.get("scope")).toContain("offline_access");
+    const scope = parsed.searchParams.get("scope");
+    expect(scope).toContain("offline_access");
+    expect(scope).toContain("accounting.contacts.read");
+  });
+
+  it("uses custom scope when provided", () => {
+    const url = buildXeroAuthorizeUrl({
+      clientId: "client-id",
+      redirectUri: "http://localhost:3000/api/oauth/callback",
+      state: "s",
+      scope: "openid offline_access accounting.contacts.read"
+    });
+    expect(new URL(url).searchParams.get("scope")).toBe(
+      "openid offline_access accounting.contacts.read"
+    );
   });
 });
 

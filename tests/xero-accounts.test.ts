@@ -2,31 +2,35 @@ import { describe, expect, it } from "vitest";
 
 import { __internal } from "@/lib/xero/accounts";
 
-describe("mapBankAccounts", () => {
-  it("keeps only BANK accounts with required fields", () => {
-    const mapped = __internal.mapBankAccounts({
-      Accounts: [
-        {
-          AccountID: "a-1",
-          Name: "Main Operating",
-          Type: "BANK",
-          Status: "ACTIVE",
-          CurrencyCode: "USD"
-        },
-        {
-          AccountID: "a-2",
-          Name: "Receivables",
-          Type: "CURRENT",
-          Status: "ACTIVE"
-        }
-      ]
-    });
+describe("contact bank line mapping", () => {
+  it("uses BankAccountID in line key when present", () => {
+    const key = __internal.buildLineKey(
+      "contact-1",
+      {
+        BankAccountID: "bank-guid-9",
+        BSB: "062000",
+        AccountNumber: "12345678"
+      },
+      0
+    );
+    expect(key).toBe("contact-1:bank-guid-9");
+  });
 
-    expect(mapped).toHaveLength(1);
-    expect(mapped[0]).toMatchObject({
-      accountId: "a-1",
-      name: "Main Operating",
-      type: "BANK"
-    });
+  it("maps a bank row into a snapshot line", () => {
+    const line = __internal.mapBankLine(
+      "contact-1",
+      "Acme Ltd",
+      {
+        AccountName: "AUD",
+        BSB: "062000",
+        AccountNumber: "12345678"
+      },
+      0
+    );
+    expect(line.lineKey).toContain("contact-1");
+    expect(line.contactName).toBe("Acme Ltd");
+    expect(line.bsb).toBe("062000");
+    expect(line.accountNumber).toBe("12345678");
+    expect(line.normalizedBankRef).toBeTruthy();
   });
 });

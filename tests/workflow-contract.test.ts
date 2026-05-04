@@ -8,7 +8,7 @@ const hoisted = vi.hoisted(() => ({
   getWebhookEventForProcessingMock: vi.fn(),
   getLatestAccountSnapshotByTenantMock: vi.fn(),
   getTenantAccessTokenMock: vi.fn(),
-  fetchBankAccountSnapshotMock: vi.fn(),
+  fetchContactBankLineSnapshotMock: vi.fn(),
   saveAccountSnapshotMock: vi.fn(),
   runNotifyJobMock: vi.fn(),
   createAlertFromProcessEventDiffMock: vi.fn()
@@ -41,7 +41,7 @@ vi.mock("@/lib/xero/refresh", () => ({
 }));
 
 vi.mock("@/lib/xero/accounts", () => ({
-  fetchBankAccountSnapshot: hoisted.fetchBankAccountSnapshotMock
+  fetchContactBankLineSnapshot: hoisted.fetchContactBankLineSnapshotMock
 }));
 
 vi.mock("@/lib/db/account-snapshots", () => ({
@@ -87,26 +87,25 @@ describe("workflow contract: webhook -> process-event -> notify", () => {
         events: [{ tenantId: "tenant-1" }]
       }
     });
-    hoisted.getLatestAccountSnapshotByTenantMock.mockResolvedValue({ accounts: [] });
+    hoisted.getLatestAccountSnapshotByTenantMock.mockResolvedValue({ contactBankLines: [] });
     hoisted.getTenantAccessTokenMock.mockResolvedValue({
       accessToken: "token-1",
       source: "refreshed"
     });
-    hoisted.fetchBankAccountSnapshotMock.mockResolvedValue([
+    hoisted.fetchContactBankLineSnapshotMock.mockResolvedValue([
       {
-        accountId: "acc-1",
-        code: "090",
-        name: "Operating",
-        type: "BANK",
-        status: "ACTIVE",
-        bankAccountNumber: null,
-        currencyCode: "USD",
-        updatedDateUtc: null
+        lineKey: "acc-1",
+        contactId: "c-1",
+        contactName: "Acme",
+        bankAccountName: "Main",
+        bsb: null,
+        accountNumber: null,
+        normalizedBankRef: null
       }
     ]);
     hoisted.saveAccountSnapshotMock.mockResolvedValue({
       organizationId: "org-1",
-      accountCount: 1,
+      lineCount: 1,
       fetchedAt: "2026-05-02T00:10:00.000Z"
     });
     hoisted.runNotifyJobMock.mockResolvedValue({

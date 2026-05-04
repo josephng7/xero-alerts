@@ -252,6 +252,11 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - Added commit table and file lists for the prod-env / go-live / QStash work (later revised into timestamped headings in this log).
 - Verification: documentation-only.
 
+### 2026-05-04_12:45 +08:00 — Contact bank lines snapshot (PR split 1/3)
+
+- **Scope:** Snapshots use contact bank detail lines from Xero `GET /Contacts` (`lib/xero/accounts.ts`); payload `schemaVersion: 2`, `contactBankLines`; diff keys are contact bank line keys; OAuth adds `accounting.contacts.read`; dashboard shows contact bank line count.
+- **Verification:** `pnpm run verify` (to run on PR branch).
+
 ## Logging Rules
 
 For each future work block, append:

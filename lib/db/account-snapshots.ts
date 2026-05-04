@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { accountSnapshots, getDb, organizations } from "@/lib/db/index";
-import type { XeroBankAccountSnapshot } from "@/lib/xero/accounts";
+import type { XeroContactBankLineSnapshot } from "@/lib/xero/accounts";
 
 const DEFAULT_STALE_AFTER_MS = 15 * 60 * 1000;
 
@@ -56,7 +56,7 @@ export async function getSnapshotStaleness(params: {
 export async function saveAccountSnapshot(params: {
   tenantId: string;
   source?: string;
-  accounts: XeroBankAccountSnapshot[];
+  contactBankLines: XeroContactBankLineSnapshot[];
 }) {
   const db = getDb();
   const organization = await db.query.organizations.findFirst({
@@ -74,7 +74,8 @@ export async function saveAccountSnapshot(params: {
       organizationId: organization.id,
       source: params.source ?? "xero",
       payload: {
-        accounts: params.accounts
+        schemaVersion: 2,
+        contactBankLines: params.contactBankLines
       },
       fetchedAt: now
     })
@@ -83,7 +84,8 @@ export async function saveAccountSnapshot(params: {
       set: {
         source: params.source ?? "xero",
         payload: {
-          accounts: params.accounts
+          schemaVersion: 2,
+          contactBankLines: params.contactBankLines
         },
         fetchedAt: now,
         updatedAt: now
@@ -92,7 +94,7 @@ export async function saveAccountSnapshot(params: {
 
   return {
     organizationId: organization.id,
-    accountCount: params.accounts.length,
+    lineCount: params.contactBankLines.length,
     fetchedAt: now.toISOString()
   };
 }

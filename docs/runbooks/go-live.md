@@ -31,6 +31,9 @@ Use this checklist when deploying the app to a new environment or cutting over p
 | `XERO_CLIENT_SECRET`   | **Required** for callback token exchange.                                   |
 | `TOKEN_ENCRYPTION_KEY` | **Required** for callback — tokens are encrypted before persistence.       |
 | `DATABASE_URL`         | **Required** — OAuth tokens are stored in Postgres.                         |
+| `XERO_OAUTH_SCOPES`    | Optional. Space-separated scopes. Default: `openid profile email accounting.contacts.read offline_access` (read-only Contacts + refresh). **Must match** the scopes enabled for this client in the [Xero Developer](https://developer.xero.com/) app. If Xero shows `unauthorized_client` / **Invalid scope for client**, open the app → **OAuth 2.0** scopes and enable every scope in the default string (or set `XERO_OAUTH_SCOPES` to match exactly what is enabled). |
+
+**Troubleshooting — “Invalid scope for client” on the Xero error page:** The authorization URL’s `scope` list and the app’s configured scopes must align. The app only **reads** contact bank details via `GET /Contacts` and needs **`accounting.contacts.read`** (read-only) or the legacy write scope **`accounting.contacts`**. After changing scopes in the Xero portal, save the app and try **Connect to Xero** again. Reconnect is required for existing tokens to receive the new scopes.
 
 ### Webhooks (`POST /api/webhooks/xero`)
 

@@ -30,7 +30,10 @@ export default async function HomePage() {
       <section style={{ marginTop: "1.5rem" }}>
         <h2>Alerts</h2>
         {alertsList.items.length === 0 ? (
-          <p>No alerts yet. Alerts are created when process-event detects account changes for a connected organization.</p>
+          <p>
+            No alerts yet. Alerts are created when process-event detects contact bank detail changes for a connected
+            organization.
+          </p>
         ) : (
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
@@ -66,7 +69,7 @@ export default async function HomePage() {
           <li>Latest webhook received: {formatIso(baseline.latestWebhookReceivedAt)}</li>
           <li>Latest snapshot fetched: {formatIso(baseline.snapshot?.fetchedAt ?? null)}</li>
           <li>Latest snapshot source: {baseline.snapshot?.source ?? "N/A"}</li>
-          <li>Latest snapshot account count: {baseline.snapshot?.accountCount ?? 0}</li>
+          <li>Latest snapshot contact bank line count: {baseline.snapshot?.lineCount ?? 0}</li>
         </ul>
       </section>
 
