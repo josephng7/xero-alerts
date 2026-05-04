@@ -67,7 +67,7 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - Verification: `pnpm run verify` passed locally.
 - Commit: `5093c6a`. Push to `main` blocked by CodeQL ruleset; use branch `feat/agents-enforcement` and open https://github.com/josephng7/xero-alerts/pull/new/feat/agents-enforcement
 
-### 2026-05-01_12:00 +08:00 — PR #2 merged (security primitives + agents enforcement)
+### 2026-05-01_12:15 +08:00 — PR #2 merged (security primitives + agents enforcement)
 
 - Merged to `main` as https://github.com/josephng7/xero-alerts/pull/2 (`feat/agents-enforcement`); merge commit `6e456f2`.
 - Local `main` fast-forwarded to match `origin/main`. Next: branch from `main` for new work; optional cleanup of stale remote branches (`feat/agents-enforcement`, `feat/security-primitives`).
