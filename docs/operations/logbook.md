@@ -4,16 +4,29 @@ This is a chronological operator log. Each entry records what changed, why, and 
 
 ## 2026-05-03
 
-### Go-live runbook + QStash forward header
-- Rewrote `docs/runbooks/go-live.md`: validation behavior (optional vars, empty UI fields), Vercel notes, **requirements by goal** (health, OAuth, webhooks, worker, cron, UI, notify), full reference aligned with `lib/env.ts` (KV/QStash signing keys/Sentry/NEXTAUTH_SECRET marked schema-only or unused).
-- **Queue bugfix:** `enqueueProcessEventJob` now sends `Upstash-Forward-x-internal-api-secret` so QStash callbacks authenticate to `POST /api/jobs/process-event`. Webhook route requires `INTERNAL_ADMIN_SECRET` whenever `QSTASH_TOKEN` is set; returns 500 with a clear message if missing.
-- Tests: webhooks route expectations + workflow publish header assertion.
-- Verification: `pnpm run verify` passed.
+### Prod env validation + go-live doc + QStash (branch `fix/env-blank-optional`)
 
-### Optional env blanks no longer fail `parseEnv`
+Operator reported production boot failing with `Invalid environment configuration` when many optional vars were present but empty (typical Vercel UI). Follow-up: align the go-live checklist with `lib/env.ts` and route-level requirements; fix QStash publish so worker callbacks can authenticate.
+
+| Commit    | Summary |
+| --------- | ------- |
+| `f465014` | `fix(env): treat blank optional vars as unset for prod deploys` — `lib/env.ts` `normalizeEnvInput()`, `tests/env.test.ts`; `docs/operations/task-tracker.md` note. |
+| `2e98ab3` | `docs(go-live): align env checklist; fix(qstash): forward internal secret to worker` — `docs/runbooks/go-live.md`, `lib/queue/qstash.ts`, `app/api/webhooks/xero/route.ts`, webhook/workflow tests, `docs/operations/logbook.md` / task-tracker. |
+
+Both commits: verification `pnpm run verify` passed.
+
+### Optional env blanks no longer fail `parseEnv` (`f465014`)
+
 - **Cause:** Zod `.optional()` only skips missing keys; `VAR=` or empty dashboard fields become `""`, which still fails `.url()`, `.email()`, and `.min(1)`.
 - **Change:** `normalizeEnvInput()` trims and maps empty strings to `undefined` before validation; exported for tests/callers if needed. Added `tests/env.test.ts` coverage.
-- Verification: `pnpm run verify` passed.
+- **Files:** `lib/env.ts`, `tests/env.test.ts`, `docs/operations/task-tracker.md`.
+
+### Go-live runbook + QStash forward header (`2e98ab3`)
+
+- Rewrote `docs/runbooks/go-live.md`: validation behavior (optional vars, empty UI fields), Vercel notes, **requirements by goal** (health, OAuth, webhooks, worker, cron, UI, notify), full reference aligned with `lib/env.ts` (KV/QStash signing keys/Sentry/NEXTAUTH_SECRET marked schema-only or unused).
+- **Queue bugfix:** `enqueueProcessEventJob` now sends `Upstash-Forward-x-internal-api-secret` so QStash callbacks authenticate to `POST /api/jobs/process-event`. Webhook route requires `INTERNAL_ADMIN_SECRET` whenever `QSTASH_TOKEN` is set; returns 500 with a clear message if missing.
+- **Tests:** `tests/webhooks-xero-route.test.ts`, `tests/workflow-webhook-queue-xero-fetch.test.ts`.
+- **Files:** `docs/runbooks/go-live.md`, `lib/queue/qstash.ts`, `app/api/webhooks/xero/route.ts`, `docs/operations/task-tracker.md`, `docs/operations/logbook.md`.
 
 ### `.env.example` policy correction
 - Restored uncommented `KEY=` rows for every variable in `lib/env.ts` that operators may set (including `NEXTAUTH_SECRET`, rotation/KV/QStash signing/Sentry). Only **omit** vars that are injected or implied by the runtime (`NODE_ENV`, `VERCEL_URL`), with a short header note. Deducible defaults remain documented in comments (`getAppBaseUrl`, default QStash API URL).
