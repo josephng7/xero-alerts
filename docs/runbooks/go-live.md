@@ -2,98 +2,181 @@
 
 Use this checklist when deploying the app to a new environment or cutting over production traffic.
 
-## Required environment variables
+## How environment validation works
 
-Set these in your hosting provider (or `.env.local` for manual verification). Values must be non-empty where marked required.
+- Variables in `lib/env.ts` are **optional at startup** unless you provide a value: the process can boot with only the keys needed for the features you use.
+- **Empty or whitespace-only** values in the host (for example Vercel environment UI) are normalized to **unset**, so optional integrations do not fail URL or email validation.
+- If you **do** set a key, the value must be valid for its type (real URL, email, non-empty string). Prefer **deleting** unused keys in the dashboard instead of placeholder strings.
+- Individual routes still enforce their own requirements (database, Xero, internal secrets). See **What to set, by goal** below.
+
+## Vercel notes
+
+- **`VERCEL_URL`** is injected automatically in preview and production.
+- **`NEXTAUTH_URL`** is optional: set your canonical `https://…` origin when it must differ from `https://${VERCEL_URL}` (for example a custom domain while `VERCEL_URL` remains the `*.vercel.app` hostname).
+- Public base URL resolution for OAuth redirects and QStash targets is documented in `lib/server/app-base-url.ts`: `NEXTAUTH_URL` (after trimming a trailing slash) → `https://${VERCEL_URL}` → `http://localhost:3000`.
+
+## What to set, by goal
+
+### Green health check (`GET /api/health`)
+
+| Variable         | Notes                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| `DATABASE_URL`   | **Required** for HTTP 200. The handler calls `getDb()`; if unset, Postgres throws and the route returns **503** with `db unavailable`. |
+
+### Xero OAuth (`/api/connect/xero` → `/api/oauth/callback`)
+
+| Variable               | Notes                                                                       |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `XERO_CLIENT_ID`       | **Required** for connect and callback.                                      |
+| `XERO_CLIENT_SECRET`   | **Required** for callback token exchange.                                   |
+| `TOKEN_ENCRYPTION_KEY` | **Required** for callback — tokens are encrypted before persistence.       |
+| `DATABASE_URL`         | **Required** — OAuth tokens are stored in Postgres.                         |
+
+### Webhooks (`POST /api/webhooks/xero`)
+
+| Variable                 | Notes                                                                                         |
+| ------------------------ | --------------------------------------------------------------------------------------------- |
+| `XERO_WEBHOOK_KEY`       | **Required** — verifies `x-xero-signature`.                                                 |
+| `DATABASE_URL`           | **Required** — persists webhook events.                                                      |
+| `QSTASH_TOKEN`           | Optional. If unset, the event is stored but **not** queued (response still 202).             |
+| `INTERNAL_ADMIN_SECRET`  | **Required when `QSTASH_TOKEN` is set** — publish uses `Upstash-Forward-x-internal-api-secret` so QStash deliveries authenticate to `process-event`. |
+| `QSTASH_URL`             | Optional. Defaults to `https://qstash.upstash.io` when `QSTASH_TOKEN` is set (`lib/queue/qstash`). |
+
+### Worker (`POST /api/jobs/process-event`)
+
+| Variable                                                         | Notes                                                    |
+| ---------------------------------------------------------------- | -------------------------------------------------------- |
+| `INTERNAL_ADMIN_SECRET`                                          | **Required** — `validateAdminInternalRouteAuth` / `x-internal-api-secret`. |
+| `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY` | **Required** — same checks as OAuth worker paths.        |
+| `DATABASE_URL`                                                 | **Required**.                                           |
+
+Optional: `XERO_ALLOWED_TENANT_ID` rejects events for other tenants.
+
+### Cron (`POST /api/cron/poll-org-accounts`)
+
+| Variable               | Notes                                      |
+| ---------------------- | ------------------------------------------ |
+| `INTERNAL_CRON_SECRET` | **Required** for cron-style authentication. |
+| Plus DB, Xero, and encryption | As enforced by the route handler (same family as other jobs). |
+
+### Alerts UI (dashboard / detail pages)
+
+| Variable                | Notes                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `INTERNAL_ADMIN_SECRET` | **Required** for list/detail data — server code calls `/api/alerts` with this secret. Without it, the UI treats data as unavailable. |
+
+### Notifications (`POST /api/jobs/notify`)
+
+| Variable                                                           | Notes                                  |
+| ------------------------------------------------------------------ | -------------------------------------- |
+| `INTERNAL_ADMIN_SECRET`                                            | **Required**.                          |
+| `TEAMS_WEBHOOK_URL`                                                | Set if using Teams.                    |
+| `RESEND_API_KEY`, `ALERTS_FROM_EMAIL`, `ALERTS_TO_EMAIL`           | Set if using email (sender must be allowed in Resend). |
+
+---
+
+## Full variable reference
+
+Canonical list: `lib/env.ts` and `.env.example`. Values below marked “schema only” are accepted at startup but **not read by route code yet**.
 
 ### Database
 
-| Variable | Purpose |
-| -------- | ------- |
-| `DATABASE_URL` | Postgres connection URI (for example Supabase pooler). Required for persistence. |
+| Variable       | Purpose                                                |
+| -------------- | ------------------------------------------------------ |
+| `DATABASE_URL` | Postgres connection URI (for example Supabase pooler). |
 
 ### Xero
 
-| Variable | Purpose |
-| -------- | ------- |
-| `XERO_CLIENT_ID` | OAuth client ID from the Xero developer app. |
-| `XERO_CLIENT_SECRET` | OAuth client secret. |
-| `XERO_WEBHOOK_KEY` | Webhook signing key from Xero (must match the key used to verify `x-xero-signature`). |
-
-Optional:
-
-| Variable | Purpose |
-| -------- | ------- |
-| `XERO_ALLOWED_TENANT_ID` | If set, process-event and related routes reject other tenant IDs (single-tenant guard). |
+| Variable                | Purpose                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `XERO_CLIENT_ID`        | OAuth client ID from the Xero developer app.                                       |
+| `XERO_CLIENT_SECRET`    | OAuth client secret.                                                             |
+| `XERO_WEBHOOK_KEY`      | Webhook signing key (must match Xero portal config for `x-xero-signature`).       |
+| `XERO_ALLOWED_TENANT_ID` | Optional single-tenant guard when set.                                          |
 
 ### App URLs and session
 
-Public origin for OAuth redirect URIs and QStash job targets is derived in this order: optional `NEXTAUTH_URL` (highest priority), else `VERCEL_URL` on Vercel, else `http://localhost:3000` for local dev. Set `NEXTAUTH_URL` to your canonical HTTPS origin when it differs from `VERCEL_URL` (for example a custom domain).
-
-| Variable | Purpose |
-| -------- | ------- |
-| `NEXTAUTH_URL` | Optional override for the public base URL when it must differ from `VERCEL_URL`. |
-| `NEXTAUTH_SECRET` | Session secret for NextAuth when using auth features that require it. |
+| Variable          | Purpose                                                                 |
+| ----------------- | ----------------------------------------------------------------------- |
+| `NEXTAUTH_URL`    | Optional canonical HTTPS origin override (see Vercel notes above).       |
+| `NEXTAUTH_SECRET` | Schema only today — NextAuth is not wired; optional for future auth.   |
 
 ### Token storage
 
-| Variable | Purpose |
-| -------- | ------- |
-| `TOKEN_ENCRYPTION_KEY` | Symmetric key used to encrypt OAuth tokens at rest. |
+| Variable               | Purpose                                  |
+| ---------------------- | ---------------------------------------- |
+| `TOKEN_ENCRYPTION_KEY` | Encrypts OAuth tokens at rest (AES-GCM). |
 
 ### Internal API authentication
 
-Worker, admin, and cron routes validate the `x-internal-api-secret` header against split secrets (not a single `INTERNAL_API_SECRET` name in env):
+Worker, admin, and cron routes use **`x-internal-api-secret`** with split secrets:
 
-| Variable | Purpose |
-| -------- | ------- |
-| `INTERNAL_ADMIN_SECRET` | Required for `POST /api/jobs/process-event`, `POST /api/jobs/notify`, and admin routes such as `POST /api/admin/sync-snapshots`. |
-| `INTERNAL_CRON_SECRET` | Required for `POST /api/cron/poll-org-accounts` and other cron-style callers. |
+| Variable                         | Purpose                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| `INTERNAL_ADMIN_SECRET`          | `POST /api/jobs/process-event`, `POST /api/jobs/notify`, admin routes, alerts API usage from UI. |
+| `INTERNAL_CRON_SECRET`           | `POST /api/cron/poll-org-accounts`.                                     |
+| `INTERNAL_ADMIN_SECRET_PREVIOUS` | Optional overlap during rotation.                                       |
+| `INTERNAL_CRON_SECRET_PREVIOUS`  | Optional overlap during rotation.                                       |
 
-Optional rotation overlap: `INTERNAL_ADMIN_SECRET_PREVIOUS`, `INTERNAL_CRON_SECRET_PREVIOUS`. See `docs/runbooks/internal-api-secret-rotation.md`.
+See `docs/runbooks/internal-api-secret-rotation.md`.
+
+### Redis / KV
+
+| Variable             | Purpose                                       |
+| -------------------- | --------------------------------------------- |
+| `KV_REST_API_URL`    | Schema only — **not referenced by app code yet**. |
+| `KV_REST_API_TOKEN`  | Schema only — safe to omit.                   |
 
 ### Queue (QStash)
 
-For webhook-to-worker handoff without blocking the HTTP request:
-
-| Variable | Purpose |
-| -------- | ------- |
-| `QSTASH_TOKEN` | Bearer token for publishing (required to enable queue handoff). |
-| `QSTASH_URL` | Optional. Defaults to `https://qstash.upstash.io` when unset. |
-
-Verify callbacks: configure QStash signing keys in the deployment if you verify Upstash signatures (`QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`).
+| Variable                     | Purpose                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `QSTASH_TOKEN`               | Bearer token for publishing to Upstash (enables webhook→worker handoff). |
+| `QSTASH_URL`                 | Optional API origin; defaults when unset (see `DEFAULT_QSTASH_URL`).     |
+| `QSTASH_CURRENT_SIGNING_KEY` | Schema only — **not used by routes for verification today**.             |
+| `QSTASH_NEXT_SIGNING_KEY`    | Schema only — reserved for future receiver verification.                |
 
 ### Notifications
 
-| Variable | Purpose |
-| -------- | ------- |
-| `TEAMS_WEBHOOK_URL` | Incoming webhook URL for Microsoft Teams alerts. |
-| `RESEND_API_KEY` | Resend API key for email. |
-| `ALERTS_FROM_EMAIL` | Sender address (must be allowed in Resend). |
-| `ALERTS_TO_EMAIL` | Recipient for alert email. |
+| Variable             | Purpose                    |
+| -------------------- | -------------------------- |
+| `TEAMS_WEBHOOK_URL`  | Microsoft Teams incoming webhook. |
+| `RESEND_API_KEY`     | Resend API key.            |
+| `ALERTS_FROM_EMAIL`  | Sender (verified in Resend). |
+| `ALERTS_TO_EMAIL`    | Alert recipient.           |
+
+### Observability
+
+| Variable      | Purpose                                                                 |
+| ------------- | ----------------------------------------------------------------------- |
+| `SENTRY_DSN`  | Parsed at startup. **Sentry SDK is not wired in this repository yet** — setting `SENTRY_DSN` alone does not send events until instrumentation exists. |
+
+---
 
 ## Order of operations
 
-1. **Database**: Create or select a Postgres instance. Set `DATABASE_URL`.
+1. **Database**: Create or select Postgres. Set **`DATABASE_URL`**.
 2. **Migrations**: From a trusted machine with env loaded, run `pnpm run db:migrate` so schema matches `drizzle/` migrations.
-3. **Secrets**: Set `TOKEN_ENCRYPTION_KEY`, `INTERNAL_ADMIN_SECRET`, `INTERNAL_CRON_SECRET`, `XERO_CLIENT_*`, `XERO_WEBHOOK_KEY`, and notification/queue vars as needed.
-4. **Deploy**: Deploy the application. Set `NEXTAUTH_URL` to the final public HTTPS origin only when it differs from `VERCEL_URL` (for example a custom domain).
-5. **OAuth connect**: Complete Xero OAuth once per environment so tenant tokens exist (`/api/connect/xero` then callback). Confirm the organization appears in the database if you inspect rows.
-6. **Webhook URL**: In the Xero developer portal, set the app webhook URL to:
+3. **Secrets**: Set **`TOKEN_ENCRYPTION_KEY`**, **`INTERNAL_ADMIN_SECRET`**, **`INTERNAL_CRON_SECRET`**, Xero client IDs/secrets, **`XERO_WEBHOOK_KEY`**, and notification/queue vars per the goals above.
+4. **Deploy**: Deploy the application. Set **`NEXTAUTH_URL`** only when the public origin must differ from **`VERCEL_URL`**.
+5. **OAuth connect**: Complete Xero OAuth once per environment (`/api/connect/xero` then callback). Confirm tenant data in the database if you inspect rows.
+6. **Webhook URL**: In the Xero developer portal, set the webhook URL to:
 
    `https://<your-host>/api/webhooks/xero`
 
-   Use the same `XERO_WEBHOOK_KEY` value as configured in the developer app for signature verification.
-7. **QStash**: If using queue mode, set `QSTASH_TOKEN` (and optionally `QSTASH_URL`). Publishing targets `<public-origin>/api/jobs/process-event`, where public origin follows the same rules as OAuth (`NEXTAUTH_URL`, then `VERCEL_URL`, then localhost). Confirm QStash delivers with `x-internal-api-secret` matching `INTERNAL_ADMIN_SECRET` as configured for your worker invocation path.
-8. **Notifications**: Configure Teams and/or Resend and send a controlled test after the first successful process-event (see safety checks).
+   Use the same **`XERO_WEBHOOK_KEY`** as in the portal for signature verification.
+7. **QStash**: If using queue mode, set **`QSTASH_TOKEN`** and **`INTERNAL_ADMIN_SECRET`** (and optionally **`QSTASH_URL`**). The webhook publisher forwards the admin secret via QStash’s **`Upstash-Forward-x-internal-api-secret`** header so deliveries to `<public-origin>/api/jobs/process-event` pass internal auth (`lib/queue/qstash.ts`).
+8. **Notifications**: Configure Teams and/or Resend; run a controlled test after the first successful process-event.
+
+---
 
 ## Safety checks before full traffic
 
-- **Health**: `GET /api/health` returns success from the deployed host.
-- **Tenant guard**: If using `XERO_ALLOWED_TENANT_ID`, confirm it matches your production tenant only.
-- **Secrets**: Confirm production secrets are not reused from staging; webhook and internal secrets are independent per environment.
-- **Idempotency**: Expect duplicate webhook deliveries; rely on stored webhook events and notify dedupe rather than disabling checks.
-- **Observability**: Optional `SENTRY_DSN` for error tracking in production.
+- **Health**: **`GET /api/health`** returns HTTP 200 only when **`DATABASE_URL`** is valid and Postgres responds; otherwise expect **503**.
+- **Tenant guard**: If using **`XERO_ALLOWED_TENANT_ID`**, confirm it matches production only.
+- **Secrets**: Use distinct values per environment; do not reuse staging webhook or internal secrets in production.
+- **Idempotency**: Expect duplicate webhook deliveries; rely on stored webhook events and notify dedupe.
+- **Observability**: **`SENTRY_DSN`** is optional in schema; wire Sentry in code when you want production error tracking.
 
 ## Related runbooks
 

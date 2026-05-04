@@ -4,6 +4,12 @@ This is a chronological operator log. Each entry records what changed, why, and 
 
 ## 2026-05-03
 
+### Go-live runbook + QStash forward header
+- Rewrote `docs/runbooks/go-live.md`: validation behavior (optional vars, empty UI fields), Vercel notes, **requirements by goal** (health, OAuth, webhooks, worker, cron, UI, notify), full reference aligned with `lib/env.ts` (KV/QStash signing keys/Sentry/NEXTAUTH_SECRET marked schema-only or unused).
+- **Queue bugfix:** `enqueueProcessEventJob` now sends `Upstash-Forward-x-internal-api-secret` so QStash callbacks authenticate to `POST /api/jobs/process-event`. Webhook route requires `INTERNAL_ADMIN_SECRET` whenever `QSTASH_TOKEN` is set; returns 500 with a clear message if missing.
+- Tests: webhooks route expectations + workflow publish header assertion.
+- Verification: `pnpm run verify` passed.
+
 ### Optional env blanks no longer fail `parseEnv`
 - **Cause:** Zod `.optional()` only skips missing keys; `VAR=` or empty dashboard fields become `""`, which still fails `.url()`, `.email()`, and `.min(1)`.
 - **Change:** `normalizeEnvInput()` trims and maps empty strings to `undefined` before validation; exported for tests/callers if needed. Added `tests/env.test.ts` coverage.
