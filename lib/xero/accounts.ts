@@ -85,13 +85,19 @@ type ContactsPagePayload = {
   pagination?: XeroContactsPagination;
 };
 
-async function fetchContactsPage(accessToken: string, page: number): Promise<ContactsPagePayload> {
+async function fetchContactsPage(
+  accessToken: string,
+  xeroTenantId: string,
+  page: number
+): Promise<ContactsPagePayload> {
   const url = new URL(CONTACTS_URL);
   url.searchParams.set("page", String(page));
   const response = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json"
+      Accept: "application/json",
+      /** Required for Xero Accounting API; without it Xero often returns 403 AuthenticationUnsuccessful. */
+      "Xero-tenant-id": xeroTenantId
     }
   });
 
@@ -106,16 +112,19 @@ async function fetchContactsPage(accessToken: string, page: number): Promise<Con
 /**
  * Read-only: paginates `GET /Contacts` and flattens each contact’s `BankAccounts` into snapshot lines.
  * Requires scope `accounting.contacts.read` (or legacy `accounting.contacts`).
+ *
+ * @param xeroTenantId Xero organisation id (same as connection `tenantId`, not connection row `id`).
  */
 export async function fetchContactBankLineSnapshot(
-  accessToken: string
+  accessToken: string,
+  xeroTenantId: string
 ): Promise<XeroContactBankLineSnapshot[]> {
   const lines: XeroContactBankLineSnapshot[] = [];
   let page = 1;
   let pageCount = 1;
 
   do {
-    const payload = await fetchContactsPage(accessToken, page);
+    const payload = await fetchContactsPage(accessToken, xeroTenantId, page);
     const pagination = payload.Pagination ?? payload.pagination;
     const pages = pagination?.PageCount ?? pagination?.pageCount;
     if (typeof pages === "number" && pages >= 1) {

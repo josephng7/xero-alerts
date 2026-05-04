@@ -150,6 +150,7 @@ describe("workflow: webhook -> QStash publish -> process-event (real Xero fetch)
           const headers = new Headers(init?.headers ?? undefined);
           expect(headers.get("Authorization")).toBe("Bearer xero-access-token");
           expect(headers.get("Accept")).toBe("application/json");
+          expect(headers.get("Xero-tenant-id")).toBe("tenant-wf-1");
           return new Response(
             JSON.stringify({
               Contacts: [
