@@ -274,6 +274,17 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - **Follow-up:** **`app_runtime_settings.pipeline_debug`** + **`GET`/`PATCH /api/admin/runtime-settings`** for `[pipeline]` logs without redeploy; optional **`PIPELINE_DEBUG=1`** env override; migration **`0005_sticky_tattoo`** (`lib/db/app-runtime-settings.ts`).
 - **Verification:** `pnpm run verify` (branch `feat/qstash-pipeline-debug`).
 
+### 2026-05-04_20:15 +08:00 — QStash publish URL + Xero Accounting API tenant header (PRs #23–#25)
+
+- **QStash:** `normalizeQstashApiOrigin` strips mistaken `/v2/publish/` on `QSTASH_URL`; `buildQstashPublishRequestUrl` matches `@upstash/qstash` path shape (literal `https://` in `/v2/publish/...`, not full-URL `encodeURIComponent`) so Upstash no longer returns misleading `invalid destination url: endpoint has invalid scheme`.
+- **Xero:** `GET /Contacts` requests now send **`Xero-tenant-id`** (`lib/xero/accounts.ts`); fixes **403 AuthenticationUnsuccessful** when bearer token was valid but org header was missing. Callers: `process-event`, `sync-snapshots`, `poll-org-accounts`.
+- **Verification:** `pnpm run verify`; production smoke: `POST /api/admin/test-qstash-enqueue` → 200 + `messageId`; QStash delivery to `process-event` succeeds after deploy.
+
+### 2026-05-04_20:30 +08:00 — OpenSpec queued for post–live-demo (planning only, no implementation commit)
+
+- **`refactor-xero-oauth-credentials-multitenant`:** normalized **`xero_oauth_credentials`** + **`organizations.credential_id`**; OAuth callback persists **all** `/connections` tenants; single CAS refresh row per grant. See `openspec/changes/refactor-xero-oauth-credentials-multitenant/`.
+- **`add-notification-field-level-diff`:** structured field-level diff for **Teams/email** and **`alerts.diff`** (contact id/name, per-field before/after, masking, truncation, dedupe canonicalization). See `openspec/changes/add-notification-field-level-diff/`.
+
 ## Logging Rules
 
 For each future work block, append:
