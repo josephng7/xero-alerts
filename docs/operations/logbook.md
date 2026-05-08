@@ -292,7 +292,7 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - **Issue:** `pnpm audit` reported two moderate advisories: **postcss** before patched **8.5.10** (GHSA-qx2v-qp2m-jg93) via `next`, and **esbuild** through **0.24.2** (GHSA-67mh-4wv8-2f99) via `drizzle-kit` → `@esbuild-kit/core-utils`.
 - **Change:** Bumped **Next** / **eslint-config-next** to **16.2.6**; added **`pnpm.overrides`** in `package.json` so **postcss** resolves to **8.5.14** and **`@esbuild-kit/core-utils>esbuild`** to **0.25.12**; refreshed `pnpm-lock.yaml`.
 - **Verification:** `pnpm audit` clean; `pnpm run verify` passed.
-- **Follow-up:** Revisit overrides when `next` raises its pinned PostCSS or `drizzle-kit` drops the legacy `@esbuild-kit` chain.
+- **Follow-up:** Prefer **no** overrides; remove them when upstream allows (see **`docs/operations/deps-overrides-revisit.md`** for the checklist and what to watch on **next** / **drizzle-kit**).
 
 ## Logging Rules
 
