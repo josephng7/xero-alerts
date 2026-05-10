@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -9,33 +10,37 @@ import {
   uuid
 } from "drizzle-orm/pg-core";
 
+/**
+ * One row per OAuth grant (access/refresh token pair).
+ * Many organizations may share one credential when they were authorised
+ * in the same Xero consent flow.
+ */
+export const xeroOauthCredentials = pgTable("xero_oauth_credentials", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  encryptedAccessToken: text("encrypted_access_token").notNull(),
+  encryptedRefreshToken: text("encrypted_refresh_token").notNull(),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }).notNull(),
+  tokenVersion: integer("token_version").notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+
 export const organizations = pgTable(
   "organizations",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     xeroTenantId: text("xero_tenant_id").notNull(),
     name: text("name"),
+    credentialId: uuid("credential_id").references(() => xeroOauthCredentials.id, {
+      onDelete: "set null"
+    }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
-  (t) => [uniqueIndex("organizations_xero_tenant_id_uidx").on(t.xeroTenantId)]
-);
-
-export const xeroOauthTokens = pgTable(
-  "xero_oauth_tokens",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    organizationId: uuid("organization_id")
-      .notNull()
-      .references(() => organizations.id, { onDelete: "cascade" }),
-    encryptedAccessToken: text("encrypted_access_token").notNull(),
-    encryptedRefreshToken: text("encrypted_refresh_token").notNull(),
-    accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }).notNull(),
-    tokenVersion: integer("token_version").notNull().default(1),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
-  },
-  (t) => [uniqueIndex("xero_oauth_tokens_org_uidx").on(t.organizationId)]
+  (t) => [
+    uniqueIndex("organizations_xero_tenant_id_uidx").on(t.xeroTenantId),
+    index("organizations_credential_id_idx").on(t.credentialId)
+  ]
 );
 
 /** Singleton row `id = 1` for operator-tunable runtime flags (see migration seed). */

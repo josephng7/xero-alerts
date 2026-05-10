@@ -43,6 +43,13 @@
       "when": 1777907351189,
       "tag": "0005_sticky_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778456226442,
+      "tag": "0006_xero_oauth_credentials",
+      "breakpoints": true
     }
   ]
 }

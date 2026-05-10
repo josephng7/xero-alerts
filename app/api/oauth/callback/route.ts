@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-import { saveXeroOauthTokens } from "@/lib/db/xero-oauth";
+import { saveXeroOAuthGrant } from "@/lib/db/xero-oauth";
 import { getEnv } from "@/lib/env";
 import { getAppBaseUrl } from "@/lib/server/app-base-url";
-import { exchangeCodeForToken, fetchPrimaryConnection } from "@/lib/xero/oauth";
+import { exchangeCodeForToken, fetchAllConnections } from "@/lib/xero/oauth";
 
 const STATE_PATTERN = /^[A-Za-z0-9_-]{20,128}$/;
 
@@ -48,12 +48,11 @@ export async function GET(request: Request) {
       redirectUri,
       code
     });
-    const connection = await fetchPrimaryConnection(token.access_token);
+    const connections = await fetchAllConnections(token.access_token);
     const expiresAt = new Date(Date.now() + token.expires_in * 1000);
 
-    await saveXeroOauthTokens({
-      tenantId: connection.tenantId,
-      tenantName: connection.tenantName,
+    await saveXeroOAuthGrant({
+      connections,
       accessToken: token.access_token,
       refreshToken: token.refresh_token,
       expiresAt,
@@ -71,8 +70,11 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         message: "Xero OAuth connected",
-        tenantId: connection.tenantId,
-        tenantName: connection.tenantName
+        tenantCount: connections.length,
+        tenants: connections.map((c) => ({
+          tenantId: c.tenantId,
+          tenantName: c.tenantName
+        }))
       },
       { status: 200 }
     );

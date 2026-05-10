@@ -113,7 +113,11 @@ export async function refreshAccessToken(params: {
   return parseTokenResponse((await response.json()) as Partial<XeroTokenResponse>);
 }
 
-export async function fetchPrimaryConnection(accessToken: string): Promise<XeroConnection> {
+/**
+ * Returns all tenant connections authorised in this grant.
+ * Replaces the old fetchPrimaryConnection (which only returned connections[0]).
+ */
+export async function fetchAllConnections(accessToken: string): Promise<XeroConnection[]> {
   const response = await fetch(XERO_CONNECTIONS_URL, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -130,14 +134,23 @@ export async function fetchPrimaryConnection(accessToken: string): Promise<XeroC
     tenantId?: string;
     tenantName?: string;
   }>;
-  const primary = payload[0];
 
-  if (!primary?.tenantId) {
-    throw new Error("No Xero tenant connection found for authorized account");
+  const connections: XeroConnection[] = payload
+    .filter((c): c is { tenantId: string; tenantName?: string } => Boolean(c.tenantId))
+    .map((c) => ({
+      tenantId: c.tenantId,
+      tenantName: c.tenantName ?? "Xero Organization"
+    }));
+
+  if (connections.length === 0) {
+    throw new Error("No Xero tenant connections found for authorized account");
   }
 
-  return {
-    tenantId: primary.tenantId,
-    tenantName: primary.tenantName ?? "Xero Organization"
-  };
+  return connections;
+}
+
+/** @deprecated Use fetchAllConnections — this returns only the first connection. */
+export async function fetchPrimaryConnection(accessToken: string): Promise<XeroConnection> {
+  const connections = await fetchAllConnections(accessToken);
+  return connections[0]!;
 }

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { decryptToken, encryptToken } from "@/lib/crypto";
-import { getDb, organizations, xeroOauthTokens } from "@/lib/db/index";
+import { getDb, organizations, xeroOauthCredentials } from "@/lib/db/index";
 import { refreshAccessToken } from "@/lib/xero/oauth";
 
 const EXPIRY_SKEW_MS = 2 * 60 * 1000;
@@ -26,14 +26,14 @@ async function loadTenantTokenRow(tenantId: string) {
     .select({
       tenantId: organizations.xeroTenantId,
       tenantName: organizations.name,
-      organizationId: organizations.id,
-      encryptedAccessToken: xeroOauthTokens.encryptedAccessToken,
-      encryptedRefreshToken: xeroOauthTokens.encryptedRefreshToken,
-      accessTokenExpiresAt: xeroOauthTokens.accessTokenExpiresAt,
-      tokenVersion: xeroOauthTokens.tokenVersion
+      credentialId: organizations.credentialId,
+      encryptedAccessToken: xeroOauthCredentials.encryptedAccessToken,
+      encryptedRefreshToken: xeroOauthCredentials.encryptedRefreshToken,
+      accessTokenExpiresAt: xeroOauthCredentials.accessTokenExpiresAt,
+      tokenVersion: xeroOauthCredentials.tokenVersion
     })
     .from(organizations)
-    .innerJoin(xeroOauthTokens, eq(xeroOauthTokens.organizationId, organizations.id))
+    .innerJoin(xeroOauthCredentials, eq(xeroOauthCredentials.id, organizations.credentialId))
     .where(eq(organizations.xeroTenantId, tenantId))
     .limit(1);
 
@@ -75,7 +75,7 @@ export async function getTenantAccessToken(params: {
 
     const db = getDb();
     const updateResult = await db
-      .update(xeroOauthTokens)
+      .update(xeroOauthCredentials)
       .set({
         encryptedAccessToken: encryptToken(refreshed.access_token, params.encryptionKey),
         encryptedRefreshToken: encryptToken(refreshed.refresh_token, params.encryptionKey),
@@ -85,12 +85,12 @@ export async function getTenantAccessToken(params: {
       })
       .where(
         and(
-          eq(xeroOauthTokens.organizationId, row.organizationId),
-          eq(xeroOauthTokens.tokenVersion, row.tokenVersion)
+          eq(xeroOauthCredentials.id, row.credentialId!),
+          eq(xeroOauthCredentials.tokenVersion, row.tokenVersion)
         )
       )
       .returning({
-        tokenVersion: xeroOauthTokens.tokenVersion
+        tokenVersion: xeroOauthCredentials.tokenVersion
       });
 
     if (updateResult.length > 0) {

@@ -303,3 +303,17 @@ For each future work block, append:
 3. Commit hash(es)
 4. Verification performed
 5. Follow-up risks or pending actions
+
+## 2026-05-10
+
+### 2026-05-10_23:45 +08:00 — refactor-xero-oauth-credentials-multitenant (OpenSpec `refactor-xero-oauth-credentials-multitenant`)
+
+- **Schema:** Added **`xero_oauth_credentials`** table (`id`, encrypted tokens, `access_token_expires_at`, `token_version`, timestamps). Added **`organizations.credential_id`** (nullable UUID FK → `xero_oauth_credentials.id ON DELETE set null`) + index. Removed legacy **`xero_oauth_tokens`** table.
+- **Migration `0006_xero_oauth_credentials.sql`:** Creates `xero_oauth_credentials`, adds `organizations.credential_id` (nullable), runs PL/pgSQL backfill (one credential row per legacy `xero_oauth_tokens` row → links matching org), then drops `xero_oauth_tokens` with RLS policies.
+- **`lib/xero/oauth.ts`:** Added **`fetchAllConnections`** (returns all authorized tenant connections). Kept `fetchPrimaryConnection` as a `@deprecated` thin wrapper. Filtered out items missing `tenantId`.
+- **`lib/db/xero-oauth.ts`:** Replaced `saveXeroOauthTokens` with **`saveXeroOAuthGrant`** — upserts one credential (reconnect-in-place when any of the tenants already has a `credential_id`) and upserts each org row in a single **Drizzle transaction**.
+- **`lib/xero/refresh.ts`:** `getTenantAccessToken` now resolves `tenantId → organizations → credential` via `innerJoin(xeroOauthCredentials, id = organizations.credentialId)`. CAS `UPDATE` targets `xeroOauthCredentials` by `(id, tokenVersion)` instead of `(organizationId, tokenVersion)`.
+- **`app/api/oauth/callback/route.ts`:** Calls `fetchAllConnections` + `saveXeroOAuthGrant`; response body now returns `tenantCount` + `tenants[]` instead of single `tenantId/tenantName`.
+- **Tests:** `tests/xero-oauth.test.ts` extended with five `fetchAllConnections` cases (multi-connection, missing name, empty list, HTTP error, filter-no-id). All 96 Vitest tests pass.
+- **Verification:** `pnpm run typecheck` + `pnpm run lint` + `pnpm run test` (96/96) + `pnpm run build` all green. Drizzle drift check: `db:generate` reports "No schema changes, nothing to migrate".
+
