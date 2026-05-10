@@ -294,6 +294,45 @@ Per-entry headings use **`YYYY-MM-DD_HH:mm +08:00`** (24-hour clock, underscore 
 - **Verification:** `pnpm audit` clean; `pnpm run verify` passed.
 - **Follow-up:** Prefer **no** overrides; remove them when upstream allows (see **`docs/operations/deps-overrides-revisit.md`** for the checklist and what to watch on **next** / **drizzle-kit**).
 
+## 2026-05-10
+
+### 2026-05-10_23:30 +08:00 — Review & study: refactor-xero-oauth-credentials-multitenant (planning, no implementation)
+
+Full codebase review completed for OpenSpec `refactor-xero-oauth-credentials-multitenant`. Assessed current state, change surface, risks, and recommended execution order. See PR for detailed analysis.
+
+**Current state (what exists):**
+- `xero_oauth_tokens` table holds encrypted tokens per organization (1:1 via `organization_id` FK + unique index).
+- `fetchPrimaryConnection` in `lib/xero/oauth.ts` calls `GET /connections` but returns only `connections[0]`, discarding additional tenants.
+- `saveXeroOauthTokens` in `lib/db/xero-oauth.ts` upserts one org + one token row.
+- `loadTenantTokenRow` in `lib/xero/refresh.ts` joins `organizations ⋈ xero_oauth_tokens` for CAS refresh.
+- OAuth callback route chains: `exchangeCodeForToken` → `fetchPrimaryConnection` → `saveXeroOauthTokens`.
+
+**Change surface (files that must change):**
+1. `lib/db/schema.ts` — add `xeroOauthCredentials` table; add `credentialId` column to `organizations`.
+2. `lib/db/xero-oauth.ts` — replace `saveXeroOauthTokens` with `saveXeroOAuthGrant` (credential + N orgs in one transaction).
+3. `lib/xero/oauth.ts` — replace `fetchPrimaryConnection` with `fetchAllConnections` returning full array.
+4. `lib/xero/refresh.ts` — `loadTenantTokenRow` joins via `credential_id`; CAS updates `xero_oauth_credentials`.
+5. `app/api/oauth/callback/route.ts` — iterate all connections, persist all.
+6. `drizzle/0006_*.sql` — migration: create `xero_oauth_credentials`, add `organizations.credential_id` nullable + FK, backfill, NOT NULL, drop `xero_oauth_tokens`.
+7. `drizzle/meta/*` — regenerated snapshots.
+8. 5+ test files mocking `getTenantAccessToken` (mock interface unchanged, but test for multi-connection callback needed).
+9. `docs/architecture/data-and-platform-workflow.md`, `docs/architecture/trust-and-secrets.md`, `docs/runbooks/go-live.md` — table references.
+
+**Risk assessment:**
+- Migration safety: nullable `credential_id` first, backfill, then NOT NULL + drop old table. Rollback via backup restore.
+- Transaction atomicity in callback: Drizzle `db.transaction()` wrapping credential insert + N org upserts.
+- Reconnect semantics: update-in-place on existing credential row (avoid orphans).
+- Test mocks for `getTenantAccessToken` use the same external interface — no breaking change to callers.
+- `XERO_ALLOWED_TENANT_ID` guard is unaffected (filters on tenant, not credential shape).
+
+**Recommended execution order (Phases A→D from tasks.md):**
+- Phase A: schema + migration (can generate via Drizzle, then hand-edit backfill SQL).
+- Phase B: optional dual-read if zero-downtime cutover needed (likely skip for this project scale).
+- Phase C: app logic — `fetchAllConnections`, `saveXeroOAuthGrant`, refresh refactor, callback route.
+- Phase D: NOT NULL migration, drop old table, docs, smoke test.
+
+**No implementation commits in this entry — planning review only.**
+
 ## Logging Rules
 
 For each future work block, append:
